@@ -1,4 +1,6 @@
+import { resolveApiUrl } from './runtime-config';
+
 export const environment = {
   production: false,
-  apiUrl: 'https://proyectonutricionbackend-production-8308.up.railway.app/api/v1',
+  apiUrl: resolveApiUrl('http://localhost:8000/api/v1'),
 };

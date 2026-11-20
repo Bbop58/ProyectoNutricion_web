@@ -1,4 +1,14 @@
-import { Component, EventEmitter, Input, Output, signal, OnChanges } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  EventEmitter,
+  HostListener,
+  Input,
+  OnChanges,
+  Output,
+  SimpleChanges,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BackupService, BackupPreview } from '../../core/services/backup.service';
@@ -21,12 +31,61 @@ export class ModalRestaurarBackupComponent implements OnChanges {
   preview = signal<BackupPreview | null>(null);
   password = '';
   private revision = 0;
-  constructor(public backupService: BackupService) {}
-  ngOnChanges(): void {
+  private previouslyFocusedElement: HTMLElement | null = null;
+  constructor(
+    public backupService: BackupService,
+    private readonly host: ElementRef<HTMLElement>,
+  ) {}
+  ngOnChanges(changes: SimpleChanges): void {
+    const openChange = changes['isOpen'];
+    if (openChange?.currentValue && !openChange.previousValue) {
+      this.previouslyFocusedElement =
+        document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      queueMicrotask(() => {
+        if (this.isOpen) {
+          this.host.nativeElement
+            .querySelector<HTMLElement>('[data-dialog-initial-focus]')
+            ?.focus();
+        }
+      });
+    } else if (openChange?.previousValue && !openChange.currentValue) {
+      this.restoreFocus();
+    }
+
     this.password = '';
     this.preview.set(null);
     this.revision++;
     if (this.isOpen && this.restoreFile) this.analyze();
+  }
+  @HostListener('keydown', ['$event'])
+  handleDialogKeydown(event: KeyboardEvent): void {
+    if (!this.isOpen) return;
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      this.cerrar();
+      return;
+    }
+    if (event.key !== 'Tab') return;
+
+    const dialog = this.host.nativeElement.querySelector<HTMLElement>('[role="dialog"]');
+    const focusable = dialog?.querySelectorAll<HTMLElement>(
+      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    );
+    if (!dialog || !focusable?.length) {
+      event.preventDefault();
+      dialog?.focus();
+      return;
+    }
+
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
   }
   analyze(): void {
     if (!this.restoreFile || !this.tenantId) {
@@ -79,5 +138,10 @@ export class ModalRestaurarBackupComponent implements OnChanges {
     this.revision++;
     this.password = '';
     this.closed.emit();
+    this.restoreFocus();
+  }
+  private restoreFocus(): void {
+    if (this.previouslyFocusedElement?.isConnected) this.previouslyFocusedElement.focus();
+    this.previouslyFocusedElement = null;
   }
 }
