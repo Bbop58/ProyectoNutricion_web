@@ -10,7 +10,16 @@ Esta guía despliega la API FastAPI y PostgreSQL en Railway, y las interfaces An
 - Servicios: `Postgres` y `backend-api`.
 - API: `https://backend-api-production-d40295b0.up.railway.app`; base URL para las interfaces: `https://backend-api-production-d40295b0.up.railway.app/api/v1`.
 - Verificación realizada: `/health` respondió HTTP 200 con `status: healthy` y `database: ok`.
-- Origen Vercel configurado provisionalmente: `https://nutrisalud-web.vercel.app`. Cuando Vercel asigne el dominio real, actualizar `FRONTEND_URL` y `CORS_ORIGINS` en Railway.
+- Origen Vercel configurado: `https://nutrisalud-web.vercel.app`. CORS se verificó con un GET desde ese origen: HTTP 200, `Access-Control-Allow-Origin` coincide y la base respondió `ok`.
+
+## Instancia Vercel creada
+
+- Proyecto: `nutrisalud-web`, vinculado al fork `Bbop58/ProyectoNutricion_web` (derivado de `Felipe-Alex-2/ProyectoNutricion_web`).
+- Dominio de producción: `https://nutrisalud-web.vercel.app`.
+- Commit desplegado: `1a50fc3` (`Prepare NutriSalud web deployment to Vercel`).
+- Build verificado: `npm ci` y `npm run build`; salida `dist/web/browser`.
+- `API_BASE_URL` está configurada para Production y apunta a la API Railway indicada arriba.
+- La portada y `/login` cargaron en navegador; `runtime-config.js` sirvió la URL de Railway.
 
 **Pendiente de seguridad antes de usar datos reales:** el `prepare_db.py` actual ejecuta `init_sprint1_db.py`, que siembra un tenant de muestra y cuentas demo, incluida una con rol `SUPERADMIN` y contraseña definida en el código. Desactiva o rota esas cuentas antes de cargar datos reales. No se copian sus contraseñas en esta guía.
 
@@ -18,8 +27,8 @@ Esta guía despliega la API FastAPI y PostgreSQL en Railway, y las interfaces An
 
 1. Crear PostgreSQL y el servicio backend en Railway.
 2. Configurar las variables del backend y desplegarlo.
-3. Crear el proyecto web en Vercel con `API_BASE_URL` apuntando a Railway.
-4. Copiar el dominio final de Vercel a `FRONTEND_URL` y `CORS_ORIGINS` en Railway y volver a desplegar el backend.
+3. Crear el proyecto web `nutrisalud-web` en Vercel con `API_BASE_URL` apuntando a Railway.
+4. Configurar `FRONTEND_URL` y `CORS_ORIGINS` en Railway con el dominio final de Vercel y volver a desplegar el backend si esos valores cambian.
 5. Ejecutar la lista de comprobación del final.
 
 Flutter Web requiere una compilación de Flutter antes de subir los archivos estáticos a Vercel. La configuración de build Angular no compila ese repositorio.
@@ -92,7 +101,7 @@ CORS_ORIGINS=https://nutrisalud-web.vercel.app
 
 Si también usas un dominio propio, incluye ambos orígenes separados por coma. No agregues `/api/v1` a CORS: CORS recibe el origen (`esquema + host + puerto`), no una ruta. El validador de producción rechaza orígenes locales.
 
-Cuando Vercel asigne el dominio definitivo, compara y corrige ambos valores si difieren; luego vuelve a desplegar el backend. No uses enlaces de recuperación de contraseña ni de retorno de pago hasta que `FRONTEND_URL` sea el dominio correcto.
+El dominio actual es `https://nutrisalud-web.vercel.app` y ya coincide con ambos valores. Si cambias el dominio, actualiza `FRONTEND_URL` y `CORS_ORIGINS` y vuelve a desplegar el backend. No uses enlaces de recuperación de contraseña ni de retorno de pago hasta que `FRONTEND_URL` sea el dominio correcto.
 
 Variables opcionales según las funciones que actives:
 
@@ -121,7 +130,7 @@ El comando pide la contraseña sin mostrarla y crea solo una cuenta nueva con ro
 
 ## 3. Aplicación Angular en Vercel
 
-1. Importa el repositorio GitHub `ProyectoNutricion_web` en Vercel.
+1. Importa el fork GitHub `Bbop58/ProyectoNutricion_web` en Vercel. Así el proyecto queda bajo la cuenta conectada a Vercel; el original sigue en `Felipe-Alex-2/ProyectoNutricion_web`.
 2. Deja **Root Directory** en la raíz del repositorio.
 3. Selecciona Angular si Vercel no lo detecta. Configura:
 
@@ -133,18 +142,18 @@ El comando pide la contraseña sin mostrarla y crea solo una cuenta nueva con ro
 
 `vercel.json` ya contiene la salida, fallback de rutas para Angular y encabezados para el service worker.
 
-4. En **Settings → Environment Variables**, crea `API_BASE_URL` para **Production** y **Preview**. Cada valor debe ser HTTPS, terminar en `/api/v1` y no incluir query ni fragmento. Ejemplo:
+4. En **Settings → Environment Variables**, crea `API_BASE_URL` para **Production**. El valor debe ser HTTPS, terminar en `/api/v1` y no incluir query ni fragmento. Valor de esta instancia:
 
 ```text
-https://<dominio-del-backend>.up.railway.app/api/v1
+https://backend-api-production-d40295b0.up.railway.app/api/v1
 ```
 
-En Preview usa un backend de pruebas si tienes uno; si no, decide explícitamente si los previews podrán tocar datos productivos. Esta variable se incorpora durante la build, así que guarda el valor antes de desplegar. Al cambiarlo, vuelve a desplegar.
+Configura `API_BASE_URL` para Preview solo cuando exista un backend de pruebas con su propia base de datos y CORS. No apuntes los previews a producción por defecto. Mientras no haya backend QA, los builds Preview fallarán porque `npm run build` exige esta variable; Production está desplegado y funciona.
 
 El comando `npm run build` genera `runtime-config.js` desde `API_BASE_URL` y falla con un mensaje claro si falta la variable, también al compilar localmente. En Vercel el valor es visible desde el navegador y debe contener solo la URL pública de la API, nunca credenciales.
 
-5. Despliega y anota el dominio `.vercel.app` asignado.
-6. Regresa a Railway, establece `FRONTEND_URL` y `CORS_ORIGINS` con ese origen exacto y vuelve a desplegar la API.
+5. El proyecto actual ya está desplegado en `https://nutrisalud-web.vercel.app`.
+6. Verifica que Railway tenga `FRONTEND_URL` y `CORS_ORIGINS` con ese origen exacto; en esta instancia ya están configurados y CORS fue comprobado.
 
 Para un dominio propio, agrégalo también en Vercel y a la lista de `CORS_ORIGINS` en Railway; deja `FRONTEND_URL` con el dominio principal que deben usar los enlaces de correo y retorno de pago.
 
