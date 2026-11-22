@@ -219,6 +219,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   reportStatusFilter = signal<string>('');
   reportSearch = signal<string>('');
   reportPreviewData = signal<ReportQueryResponse | null>(null);
+  reportResultColumns = signal<{key: string; label: string}[]>([]);
   isLoadingReport = signal<boolean>(false);
   isExportingReport = signal<boolean>(false);
   reportFilterTenant = signal<string>('');
@@ -3315,18 +3316,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   loadReportConfig(): void {
     this.loadReportBranches();
     this.reportService.getEntities().subscribe({
-      next: (entities) => {
-        if (entities.length > 0) {
-          const current = this.selectedReportEntity();
-          const target = entities.find((e) => e.entity === current) ? current : entities[0].entity;
-          this.onReportEntityChange(target);
-        } else {
-          this.generateReportPreview();
-        }
-      },
-      error: () => {
-        this.generateReportPreview();
-      },
+      error: () => this.reportError.set('No se pudo cargar el catálogo de reportes. Intenta nuevamente.'),
     });
   }
   onReportEntityChange(entityKey: string): void {
@@ -3343,6 +3333,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   toggleReportColumn(colKey: string): void {
+    if (this.selectedReportColumns().length === 1 && this.selectedReportColumns().includes(colKey)) {
+      this.reportError.set('Conserva al menos un campo para visualizar y descargar.');
+      return;
+    }
     this.selectedReportColumns.update((cols) => {
       if (cols.includes(colKey)) {
         return cols.filter((c) => c !== colKey);
@@ -3502,6 +3496,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.reportService.getSavedReport(id).subscribe({
       next: (r) => {
         this.reportPreviewRequestKey = '';
+        this.reportResultColumns.set([]);
         this.reportPreviewData.set(r);
       },
       error: (e) => this.reportError.set(e?.error?.detail || 'No se pudo abrir el reporte.'),
@@ -3681,6 +3676,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
 
     this.isProcessingVoice.set(true);
+    this.reportPreviewData.set(null);
+    this.reportResultColumns.set([]);
+    this.voiceSummaryData.set(null);
+    this.stopVoiceSummary();
     this.reportError.set(null);
     this.geminiVoiceExplanation.set(null);
 
@@ -3690,8 +3689,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
       .sendVoiceCommand(
         transcript,
         tenantId,
-        this.reportAnalysisOptions().tenant_ids || [],
-        this.reportAnalysisOptions().branch_ids || [],
+        [],
+        [],
       )
       .subscribe({
         next: (res) => {
@@ -3730,7 +3729,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
           // Si vino la vista previa de datos generada directamente, asignarla
           if (res.report_data) {
-            if (!this.isReportSummary() && !this.selectedReportColumns().length) {
+            this.reportResultColumns.set(res.report_data.columns);
+            if (!this.selectedReportColumns().length) {
               this.selectedReportColumns.set(res.report_data.columns.map((column) => column.key));
             }
             this.reportPreviewData.set(res.report_data);
@@ -3741,7 +3741,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
             this.generateReportPreview();
           }
 
-          this.reportMessage.set(`Gemini IA: ${res.explanation}`);
+          this.reportMessage.set(null);
           setTimeout(() => this.reportMessage.set(null), 6000);
         },
         error: (err: any) => {

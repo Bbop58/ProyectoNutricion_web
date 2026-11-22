@@ -4055,8 +4055,8 @@
       <!-- TAB: MÓDULO DE REPORTES DINÁMICOS (EXCEL Y PDF) -->
       <!-- ============================================================= -->
       @if (activeTab() === 'reportes') {
-        <section class="card" style="padding: 20px; margin-bottom: 20px">
-          <h2>Reportes guardados</h2>
+        <details class="card" style="padding: 16px; margin-bottom: 16px">
+          <summary>Reportes guardados</summary>
           <p>
             Guarda el resultado para conservarlo en los respaldos. Las exportaciones también se
             guardan.
@@ -4078,67 +4078,14 @@
               ><button class="btn-outline" (click)="deleteSavedReport(report.id)">Eliminar</button>
             </div>
           }
-        </section>
+        </details>
 
         <header class="workspace-header">
           <div>
             <h1 class="page-title">Reportes Dinámicos</h1>
             <p class="page-subtitle">
-              Personaliza filtros, selecciona campos y exporta informes profesionales a Excel
-              (.xlsx) y PDF
+              Pide el reporte por voz o texto. Selecciona sus atributos y descarga el resultado.
             </p>
-          </div>
-          <div class="header-actions" style="display: flex; gap: 10px">
-            <button
-              (click)="exportReportExcel()"
-              class="btn-primary"
-              [disabled]="isExportingReport() || isLoadingReport() || !reportPreviewIsCurrent()"
-              style="background: #1d6f42; display: inline-flex; align-items: center; gap: 6px"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-                <line x1="16" y1="13" x2="8" y2="13"></line>
-                <line x1="16" y1="17" x2="8" y2="17"></line>
-                <polyline points="10 9 9 9 8 9"></polyline>
-              </svg>
-              <span>{{ isExportingReport() ? 'Exportando...' : 'Exportar a Excel' }}</span>
-            </button>
-
-            <button
-              (click)="exportReportPdf()"
-              class="btn-primary"
-              [disabled]="isExportingReport() || isLoadingReport() || !reportPreviewIsCurrent()"
-              style="background: #d9534f; display: inline-flex; align-items: center; gap: 6px"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-                <line x1="12" y1="18" x2="12" y2="12"></line>
-                <line x1="9" y1="15" x2="15" y2="15"></line>
-              </svg>
-              <span>{{ isExportingReport() ? 'Exportando...' : 'Exportar a PDF' }}</span>
-            </button>
           </div>
         </header>
 
@@ -4149,7 +4096,7 @@
           <div class="alert alert-error mb-3">{{ reportError() }}</div>
         }
 
-        <app-workspace-selector [compact]="true" (saved)="workspaceChanged()" />
+        <p class="report-options-help">Sin fechas: del 1 de enero de este año hasta hoy. Sin sucursal: todas las sucursales autorizadas de tu empresa. Puedes pedir una o varias por su nombre.</p>
 
         <!-- Card: Asistente de Voz para Reportes Dinámicos con Gemini IA -->
 
@@ -4334,7 +4281,7 @@
               >
                 <polygon points="5 3 19 12 5 21 5 3"></polygon>
               </svg>
-              <span>Procesar</span>
+              <span>Generar reporte</span>
             </button>
           </div>
 
@@ -4371,11 +4318,11 @@
               Recetas y macros
             </button>
             <button
-              (click)="selectVoiceSuggestion('Reporte de pagos y cobros de suscripciones')"
+              (click)="selectVoiceSuggestion('Ingresos cobrados por sucursal este año')"
               class="btn-outline btn-sm"
               style="font-size: 0.75rem; border-radius: 14px; padding: 3px 10px"
             >
-              Pagos de suscripciones
+              Ingresos por sucursal
             </button>
             <button
               (click)="selectVoiceSuggestion('Bitácora de auditoría y movimientos recientes')"
@@ -4407,438 +4354,17 @@
           }
         </div>
 
-        <!-- Panel de Control y Configuración del Reporte -->
-
-        <div class="card mb-4" style="padding: 24px">
-          <h2
-            style="
-              font-size: 1.15rem;
-              font-weight: 700;
-              margin-bottom: 16px;
-              color: var(--color-text-title);
-            "
-          >
-            1. Configuración de Parámetros del Reporte
-          </h2>
-
-          <!-- Selector de Entidad -->
-          <div style="margin-bottom: 20px">
-            <label
-              style="
-                display: block;
-                font-weight: 600;
-                font-size: 0.88rem;
-                margin-bottom: 8px;
-                color: var(--color-text-muted);
-              "
-            >
-              Selecciona la Entidad a Reportar *
-            </label>
-            <div
-              style="
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-                gap: 10px;
-              "
-            >
-              @for (ent of reportService.entities(); track ent.entity) {
-                <div
-                  (click)="onReportEntityChange(ent.entity)"
-                  [style.border-color]="
-                    selectedReportEntity() === ent.entity
-                      ? 'var(--color-primary)'
-                      : 'var(--color-border)'
-                  "
-                  [style.background]="
-                    selectedReportEntity() === ent.entity
-                      ? 'rgba(32, 100, 67, 0.08)'
-                      : 'transparent'
-                  "
-                  style="
-                    border: 2px solid;
-                    border-radius: 10px;
-                    padding: 12px 14px;
-                    cursor: pointer;
-                    transition: all 0.2s ease;
-                  "
-                >
-                  <div style="font-weight: 600; font-size: 0.9rem; color: var(--color-text-title)">
-                    {{ ent.label }}
-                  </div>
-                  <small
-                    style="
-                      font-size: 0.75rem;
-                      color: var(--color-text-muted);
-                      display: block;
-                      margin-top: 4px;
-                    "
-                    >{{ ent.description }}</small
-                  >
-                </div>
-              }
-            </div>
-          </div>
-
-          <section class="card report-options" aria-labelledby="report-options-heading">
-            <h2 id="report-options-heading">Presentación del reporte</h2>
-            <div class="report-controls-grid">
-              <label for="report-mode"
-                >Tipo de resultado
-                <select
-                  id="report-mode"
-                  class="select-input"
-                  [value]="isReportSummary() ? 'summary' : 'list'"
-                  (change)="setReportMode($any($event.target).value)"
-                >
-                  <option value="list">Listado detallado</option>
-                  <option value="summary">Resumen numérico</option>
-                </select>
-              </label>
-              @if (isReportSummary()) {
-                <label for="report-group"
-                  >Agrupar por
-                  <select
-                    id="report-group"
-                    class="select-input"
-                    [value]="reportAnalysisOptions().group_by || 'total'"
-                    (change)="setReportGrouping($any($event.target).value)"
-                  >
-                    <option value="total">Total general</option>
-                    @if (isSaasAdmin()) {
-                      <option value="company">Empresa</option>
-                    }
-                    <option value="branch">Sucursal</option>
-                    <option value="month">Mes</option>
-                    @if (
-                      ['appointments', 'payments', 'nutritional_plans'].includes(
-                        selectedReportEntity()
-                      )
-                    ) {
-                      <option value="status">Estado</option>
-                    }
-                    @if (
-                      ['appointments', 'clinical_records', 'nutritional_plans'].includes(
-                        selectedReportEntity()
-                      )
-                    ) {
-                      <option value="nutritionist">Especialista</option>
-                    }
-                    @if (selectedReportEntity() === 'payments') {
-                      <option value="payment_method">Método de pago</option>
-                    }
-                  </select>
-                </label>
-                <label for="report-metric"
-                  >Calcular
-                  <select
-                    id="report-metric"
-                    class="select-input"
-                    [value]="reportAnalysisOptions().metric || 'count'"
-                    (change)="setReportMetric($any($event.target).value)"
-                  >
-                    <option value="count">Cantidad de registros</option>
-                    @if (
-                      [
-                        'patients',
-                        'appointments',
-                        'clinical_records',
-                        'nutritional_plans',
-                      ].includes(selectedReportEntity())
-                    ) {
-                      <option value="unique_patients">Pacientes únicos</option>
-                    }
-                    @if (reportNumericFields().length) {
-                      <option value="sum">Suma</option>
-                      <option value="average">Promedio</option>
-                    }
-                    @if (selectedReportEntity() === 'appointments') {
-                      <option value="cancellation_rate">Tasa de cancelación (%)</option>
-                    }
-                  </select>
-                </label>
-                @if (['sum', 'average'].includes(reportAnalysisOptions().metric || '')) {
-                  <label for="report-value-field"
-                    >Campo numérico
-                    <select
-                      id="report-value-field"
-                      class="select-input"
-                      [value]="reportAnalysisOptions().value_field || ''"
-                      (change)="setReportValueField($any($event.target).value)"
-                    >
-                      @for (column of reportNumericFields(); track column.key) {
-                        <option [value]="column.key">{{ column.label }}</option>
-                      }
-                    </select>
-                  </label>
-                }
-              }
-            </div>
-            <p class="report-options-help">
-              {{
-                isReportSummary()
-                  ? 'Resume los registros con un cálculo: por ejemplo, cantidad de citas por mes o ingresos por sucursal.'
-                  : 'Muestra cada registro con las columnas y filtros que selecciones abajo.'
-              }}
-            </p>
-            <div class="report-controls-grid">
-              @if (isSaasAdmin() && !authService.currentUser()?.active_tenant_id) {
-                <details class="report-scope-filter">
-                  <summary>
-                    Empresas:
-                    {{ reportAnalysisOptions().tenant_ids?.length || 'todas las disponibles' }}
-                  </summary>
-                  <fieldset>
-                    <legend>Selecciona las empresas del reporte</legend>
-                    @for (company of tenants(); track company.id) {
-                      <label class="report-scope-option"
-                        ><input
-                          type="checkbox"
-                          [checked]="
-                            reportAnalysisOptions().tenant_ids?.includes(company.id) || false
-                          "
-                          (change)="toggleReportCompany(company.id)"
-                        /><span>{{ company.name }}</span></label
-                      >
-                    } @empty {
-                      <p>No hay empresas disponibles.</p>
-                    }
-                  </fieldset>
-                </details>
-              }
-              @if (isSaasAdmin() && !authService.currentUser()?.active_branch_id) {
-                <details class="report-scope-filter">
-                  <summary>
-                    Sucursales:
-                    {{ reportAnalysisOptions().branch_ids?.length || 'todas las disponibles' }}
-                  </summary>
-                  <fieldset>
-                    <legend>Selecciona las sucursales del reporte</legend>
-                    @for (branch of reportBranches(); track branch.id) {
-                      <label class="report-scope-option"
-                        ><input
-                          type="checkbox"
-                          [checked]="
-                            reportAnalysisOptions().branch_ids?.includes(branch.id) || false
-                          "
-                          (change)="toggleReportBranch(branch.id)"
-                        /><span
-                          >{{ getTenantName(branch.tenant_id) }} · {{ branch.name }}</span
-                        ></label
-                      >
-                    } @empty {
-                      <p>No hay sucursales disponibles para este espacio.</p>
-                    }
-                  </fieldset>
-                </details>
+        @if (reportPreviewData() && reportResultColumns().length) {
+          <section class="card mb-4" style="padding: 20px" aria-label="Atributos del reporte">
+            <h2>Campos del resultado y la descarga</h2>
+            <div style="display: flex; flex-wrap: wrap; gap: 16px; margin-top: 12px">
+              @for (column of reportResultColumns(); track column.key) {
+                <label><input type="checkbox" [checked]="selectedReportColumns().includes(column.key)"
+                  (change)="toggleReportColumn(column.key)" /> {{ column.label }}</label>
               }
             </div>
           </section>
-          @if (!isReportSummary()) {
-            <!-- Selector de Columnas Dinámicas -->
-            <div style="margin-bottom: 20px">
-              <div
-                style="
-                  display: flex;
-                  justify-content: space-between;
-                  align-items: center;
-                  margin-bottom: 8px;
-                "
-              >
-                <label style="font-weight: 600; font-size: 0.88rem; color: var(--color-text-muted)">
-                  Columnas del listado y la exportación
-                </label>
-                <div style="display: flex; gap: 8px">
-                  <button
-                    (click)="selectAllReportColumns()"
-                    class="btn-outline btn-sm"
-                    style="font-size: 0.75rem; padding: 3px 8px"
-                  >
-                    Todas
-                  </button>
-                  <button
-                    (click)="deselectAllReportColumns()"
-                    class="btn-outline btn-sm"
-                    style="font-size: 0.75rem; padding: 3px 8px"
-                  >
-                    Ninguna
-                  </button>
-                </div>
-              </div>
-
-              @for (ent of reportService.entities(); track ent.entity) {
-                @if (selectedReportEntity() === ent.entity) {
-                  <div
-                    style="
-                      display: flex;
-                      flex-wrap: wrap;
-                      gap: 12px;
-                      background: rgba(0, 0, 0, 0.02);
-                      padding: 14px;
-                      border-radius: 8px;
-                      border: 1px solid var(--color-border);
-                    "
-                  >
-                    @for (col of ent.available_columns; track col.key) {
-                      <label
-                        style="
-                          display: inline-flex;
-                          align-items: center;
-                          gap: 6px;
-                          cursor: pointer;
-                          font-size: 0.85rem;
-                          user-select: none;
-                        "
-                      >
-                        <input
-                          type="checkbox"
-                          [checked]="selectedReportColumns().includes(col.key)"
-                          (change)="toggleReportColumn(col.key)"
-                          style="accent-color: var(--color-primary); width: 16px; height: 16px"
-                        />
-                        <span>{{ col.label }}</span>
-                      </label>
-                    }
-                  </div>
-                }
-              }
-            </div>
-          } @else {
-            <p class="report-options-help">
-              Las columnas del resumen se definen con la agrupación y el cálculo seleccionados.
-            </p>
-          }
-          <!-- Filtros secundarios -->
-          <div
-            style="
-              display: grid;
-              grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-              gap: 14px;
-              margin-bottom: 20px;
-            "
-          >
-            <div>
-              <label
-                for="report-start-date"
-                style="
-                  display: block;
-                  font-size: 0.82rem;
-                  font-weight: 600;
-                  color: var(--color-text-muted);
-                  margin-bottom: 4px;
-                "
-                >Desde Fecha</label
-              >
-              <input
-                type="date"
-                id="report-start-date"
-                [value]="reportStartDate()"
-                (input)="reportStartDate.set($any($event.target).value)"
-                (change)="generateReportPreview()"
-                class="input-field form-control"
-              />
-            </div>
-            <div>
-              <label
-                for="report-end-date"
-                style="
-                  display: block;
-                  font-size: 0.82rem;
-                  font-weight: 600;
-                  color: var(--color-text-muted);
-                  margin-bottom: 4px;
-                "
-                >Hasta Fecha</label
-              >
-              <input
-                type="date"
-                id="report-end-date"
-                [value]="reportEndDate()"
-                (input)="reportEndDate.set($any($event.target).value)"
-                (change)="generateReportPreview()"
-                class="input-field form-control"
-              />
-            </div>
-            @if (selectedReportEntity() !== 'clinical_records') {
-              <div>
-                <label class="report-filter-label" for="report-status">{{
-                  selectedReportEntity() === 'activity_logs' ? 'Categoría de operación' : 'Estado'
-                }}</label>
-                @if (selectedReportEntity() === 'activity_logs') {
-                  <input
-                    id="report-status"
-                    class="input-field form-control"
-                    [value]="reportStatusFilter()"
-                    (input)="reportStatusFilter.set($any($event.target).value)"
-                    (keyup.enter)="generateReportPreview()"
-                    placeholder="Ej.: OPERACIONES"
-                  />
-                } @else {
-                  <select
-                    id="report-status"
-                    class="input-field select-input"
-                    [value]="reportStatusFilter()"
-                    [disabled]="reportAnalysisOptions().metric === 'cancellation_rate'"
-                    (change)="reportStatusFilter.set($any($event.target).value)"
-                  >
-                    <option value="">Todos los estados</option>
-                    @for (status of reportStatusOptions(); track status.value) {
-                      <option [value]="status.value">{{ status.label }}</option>
-                    }
-                  </select>
-                  @if (reportAnalysisOptions().metric === 'cancellation_rate') {
-                    <small>La tasa utiliza citas de todos los estados.</small>
-                  }
-                }
-              </div>
-            }
-
-            <div>
-              <label
-                for="report-search"
-                style="
-                  display: block;
-                  font-size: 0.82rem;
-                  font-weight: 600;
-                  color: var(--color-text-muted);
-                  margin-bottom: 4px;
-                "
-                >Término de Búsqueda</label
-              >
-              <input
-                type="text"
-                id="report-search"
-                [value]="reportSearch()"
-                (input)="reportSearch.set($any($event.target).value)"
-                (keyup.enter)="generateReportPreview()"
-                placeholder="Nombre, correo o contenido del reporte..."
-                class="input-field form-control"
-              />
-            </div>
-          </div>
-
-          <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap">
-            <button
-              (click)="generateReportPreview()"
-              class="btn-primary"
-              [disabled]="isLoadingReport()"
-              style="min-width: 180px"
-            >
-              @if (isLoadingReport()) {
-                <span>Cargando datos...</span>
-              } @else {
-                <span>Generar / Actualizar Vista Previa</span>
-              }
-            </button>
-            <button
-              (click)="clearReportFilters()"
-              type="button"
-              class="btn-outline"
-              [disabled]="isLoadingReport()"
-            >
-              <span>Limpiar Filtros</span>
-            </button>
-          </div>
-        </div>
+        }
 
         <!-- Indicador de carga cuando no hay datos previos -->
         @if (isLoadingReport() && !reportPreviewData()) {

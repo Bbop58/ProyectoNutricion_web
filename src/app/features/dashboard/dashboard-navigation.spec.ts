@@ -218,6 +218,20 @@ describe('Exclusive staff navigation', () => {
     flushRequests();
     expect(fixture.componentInstance.activeTab()).toBe('principal');
   });
+  it('starts a fresh voice scope and hides manual date controls', () => {
+    const component = fixture.componentInstance;
+    component.setActiveTab('reportes', false);
+    flushRequests();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('input[type="date"]')).toBeNull();
+    expect(fixture.nativeElement.querySelector('#report-mode')).toBeNull();
+    component.reportAnalysisOptions.set({branch_ids: ['old-branch']});
+    component.processVoiceReportCommand('Ingresos por sucursal');
+    const request = http.expectOne(r => r.url.endsWith('/reports/voice-command'));
+    expect(request.request.body.branch_ids).toEqual([]);
+    request.flush({parsed_request:{entity:'payments'}, explanation:'OK', report_data:{columns:[], rows:[], total_rows:0}});
+    flushRequests();
+  });
   it('preserves the interpreted analysis for preview, save and both exports', () => {
     const component = fixture.componentInstance;
     component.setActiveTab('reportes', false);
