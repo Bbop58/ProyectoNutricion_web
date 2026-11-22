@@ -1,4 +1,5 @@
-import { access, writeFile } from 'node:fs/promises';
+import { access, readFile, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import path from 'node:path';
 import process from 'node:process';
 
@@ -43,6 +44,16 @@ try {
     `window.__NUTRISALUD_CONFIG__ = ${JSON.stringify({ apiUrl })};\n`,
     'utf8',
   );
+  // Angular generated this manifest before runtime-config.js was populated.
+  // Keep the config available offline while matching its deployed contents.
+  const manifestFile = path.join(outputDirectory, 'ngsw.json');
+  const manifest = JSON.parse(await readFile(manifestFile, 'utf8'));
+  if (!Object.hasOwn(manifest.hashTable, '/runtime-config.js')) {
+    throw new Error('runtime-config.js is missing from the service worker manifest.');
+  }
+  manifest.hashTable['/runtime-config.js'] = createHash('sha1')
+    .update(await readFile(configFile)).digest('hex');
+  await writeFile(manifestFile, JSON.stringify(manifest, null, 2), 'utf8');
   console.log(`Configuración de API escrita en ${configFile}.`);
 } catch (error) {
   console.error(`No se pudo escribir la configuración de API: ${error.message}`);
