@@ -492,7 +492,9 @@
                   Cancelar
                 </button>
               }
-            </article>
+            <button class="ns-btn" (click)="downloadAppointment(a.id)">{{ a.status === 'CANCELLED' ? 'Cancelación PDF' : 'Constancia PDF' }}</button>
+@if (a.payment_status === 'PAID') { <button class="ns-btn" (click)="downloadAppointment(a.id, true)">Recibo PDF</button> }
+</article>
           } @empty {
             <div class="ns-empty">
               <ns-icon name="calendar" />

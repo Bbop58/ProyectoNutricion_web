@@ -1,3 +1,4 @@
+import { DocumentService } from '../../core/services/document.service';
 import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
@@ -500,6 +501,11 @@ export class ClientPortalComponent implements OnInit {
       this.success.set('La suscripción fue cancelada.');
     });
   }
+  private documents = inject(DocumentService);
+  downloadAppointment(id: string, receipt = false): void {
+    this.documents.download('/appointments/' + id + (receipt ? '/receipt/pdf' : '/pdf'), (receipt ? 'Recibo_' : 'Constancia_') + id + '.pdf').subscribe({error: () => window.alert('No se pudo descargar el PDF.')});
+  }
+
   downloadReceipt(receipt: Receipt): void {
     this.execute(
       'recibo',

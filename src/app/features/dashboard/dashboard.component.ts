@@ -1,3 +1,4 @@
+import { SubscriptionDocumentsComponent } from '../../shared/ui/subscription-documents.component';
 import { OfflinePanelComponent } from '../../shared/ui/offline-panel.component';
 import { OfflineService } from '../../core/services/offline.service';
 import { StaffNavigationComponent } from './staff-navigation.component';
@@ -39,6 +40,7 @@ import { ActivityLog } from '../../core/models/activity-log.model';
 import { RecipeService } from '../../core/services/recipe.service';
 import { ClinicalService } from '../../core/services/clinical.service';
 import { SubscriptionService } from '../../core/services/subscription.service';
+import { DocumentService } from '../../core/services/document.service';
 import { PaymentService } from '../../core/services/payment.service';
 import { Recipe } from '../../core/models/recipe.model';
 import {
@@ -94,6 +96,7 @@ import { ModalRestaurarBackupComponent } from '../copias-seguridad/modal-restaur
   selector: 'app-dashboard',
   standalone: true,
   imports: [
+    SubscriptionDocumentsComponent,
     OfflinePanelComponent,
     UserAvatarComponent,
     AvatarPickerComponent,
@@ -2214,6 +2217,27 @@ export class DashboardComponent implements OnInit, OnDestroy {
   closePaymentDetail(): void {
     this.paymentDetailModalOpen.set(false);
     this.selectedPaymentForDetail.set(null);
+  }
+
+  private documents = inject(DocumentService);
+  downloadingDocument = signal(false);
+  downloadDocument(path: string, filename: string): void {
+    if (this.downloadingDocument()) return;
+    this.downloadingDocument.set(true);
+    this.documents.download(path, filename).subscribe({
+      next: () => this.downloadingDocument.set(false),
+      error: () => { this.downloadingDocument.set(false); this.appointmentError.set('No se pudo descargar el PDF. Comprueba la conexión y que el documento esté disponible.'); },
+    });
+  }
+
+  downloadCompanyPlan(): void {
+    this.subscriptionService.getCurrentSubscription().subscribe({
+      next: sub => {
+        if (sub?.source === 'MANUAL') this.downloadDocument('/subscriptions/' + sub.id + '/assignment/pdf', 'Nota_plan_' + sub.id + '.pdf');
+        else this.paymentError.set('Tu plan no tiene una asignación manual vigente. Los pagos tienen su recibo de suscripción.');
+      },
+      error: () => this.paymentError.set('No se pudo consultar la asignación del plan.'),
+    });
   }
 
   downloadPaymentPdf(payment: Payment): void {

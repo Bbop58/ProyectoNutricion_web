@@ -1,3 +1,4 @@
+import { DocumentService } from '../../core/services/document.service';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -60,11 +61,11 @@ import { PlatformService, PlatformCompany, PlatformPlan, PlatformSubscription } 
           </section>
         }
         @if (tab() === 'subscriptions') {
-          <section class="panel"><div class="table-scroll"><table><thead><tr><th>Empresa</th><th>Plan</th><th>Estado</th><th>Vence</th><th>Origen</th><th>Importe</th></tr></thead><tbody>
+          <section class="panel"><div class="table-scroll"><table><thead><tr><th>Empresa</th><th>Plan</th><th>Estado</th><th>Vence</th><th>Origen</th><th>Importe</th><th>Documento</th></tr></thead><tbody>
             @for (s of subscriptions(); track s.id) { <tr><td>{{ s.company_name }}</td><td>{{ planName(s.plan_name) }}</td><td>{{ state(s.status) }}</td>
               <td>{{ s.expires_at | date:'dd/MM/yyyy' }}</td><td>{{ s.source === 'MANUAL' ? 'Asignación manual' : 'PayPal' }}</td>
-              <td>{{ s.source === 'MANUAL' ? 'Sin cobro' : (s.amount | number:'1.2-2') + ' ' + s.currency }}</td></tr>
-            } @empty { <tr><td colspan="6">No hay suscripciones registradas.</td></tr> }
+              <td>{{ s.source === 'MANUAL' ? 'Sin cobro' : (s.amount | number:'1.2-2') + ' ' + s.currency }}</td><td>@if (s.source === 'MANUAL') { <button class="secondary" (click)="downloadAssignment(s.id)">Nota PDF</button> }</td></tr>
+            } @empty { <tr><td colspan="7">No hay suscripciones registradas.</td></tr> }
           </tbody></table></div></section>
         }
         @if (tab() === 'audit') {
@@ -125,6 +126,10 @@ import { PlatformService, PlatformCompany, PlatformPlan, PlatformSubscription } 
 })
 export class PlatformComponent implements OnInit {
   readonly auth = inject(AuthService);
+  private documents = inject(DocumentService);
+  downloadAssignment(id: string) {
+    this.documents.download('/platform/subscriptions/' + id + '/pdf', 'Nota_plan_' + id + '.pdf').subscribe({error: () => this.error.set('No se pudo descargar la nota PDF.')});
+  }
   private api = inject(PlatformService);
   readonly Math = Math;
   readonly menu = [{ key: 'overview', label: 'Inicio' }, { key: 'companies', label: 'Empresas' }, { key: 'plans', label: 'Planes' }, { key: 'subscriptions', label: 'Suscripciones' }, { key: 'audit', label: 'Historial de cambios' }];

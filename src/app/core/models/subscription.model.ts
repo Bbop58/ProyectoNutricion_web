@@ -15,6 +15,7 @@ export interface SubscriptionPlan {
 }
 
 export interface Subscription {
+  source?: string;
   id: string;
   tenant_id: string;
   plan_name: string;

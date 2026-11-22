@@ -641,6 +641,7 @@
       <!-- TAB: GESTIÓN DE SUSCRIPCIÓN (PAYPAL SANDBOX) -->
       <!-- ============================================================= -->
       @if (activeTab() === 'suscripcion') {
+        <ns-subscription-documents />
         <header class="workspace-header">
           <div>
             <div class="header-tag">Caja • Punto de Venta (POS) PayPal Sandbox</div>
@@ -650,7 +651,7 @@
               Sandbox
             </p>
           </div>
-          <div class="header-actions">
+          <div class="header-actions"><button class="btn-outline" (click)="downloadCompanyPlan()">Nota de asignación PDF</button>
             <button
               (click)="loadPaymentData()"
               class="btn-outline"
@@ -3414,6 +3415,11 @@
                       </td>
                       <td style="text-align: right">
                         <div class="action-buttons-group">
+                          <button class="btn-outline" [disabled]="downloadingDocument()" (click)="downloadDocument('/appointments/' + appt.id + '/pdf', 'Constancia_cita_' + appt.id + '.pdf')">{{ appt.status === 'CANCELLED' ? 'Cancelación PDF' : 'Constancia PDF' }}</button>
+                          @if (appt.payment_status === 'PAID') {
+                            <button class="btn-outline" [disabled]="downloadingDocument()" (click)="downloadDocument('/appointments/' + appt.id + '/receipt/pdf', 'Recibo_cita_' + appt.id + '.pdf')">Recibo PDF</button>
+                          }
+
                           @if (appt.status === 'PENDING') {
                             <button
                               (click)="confirmAppointment(appt)"
