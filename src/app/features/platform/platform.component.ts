@@ -1,4 +1,5 @@
 import { DocumentService } from '../../core/services/document.service';
+import { EmailDocumentComponent } from '../../shared/ui/email-document.component';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -7,7 +8,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { PlatformService, PlatformCompany, PlatformPlan, PlatformSubscription } from './platform.service';
 
 @Component({
-  selector: 'ns-platform', standalone: true, imports: [CommonModule, FormsModule],
+  selector: 'ns-platform', standalone: true, imports: [CommonModule, FormsModule, EmailDocumentComponent],
   template: `
     <div class="platform-shell">
       <aside class="platform-nav">
@@ -64,7 +65,7 @@ import { PlatformService, PlatformCompany, PlatformPlan, PlatformSubscription } 
           <section class="panel"><div class="table-scroll"><table><thead><tr><th>Empresa</th><th>Plan</th><th>Estado</th><th>Vence</th><th>Origen</th><th>Importe</th><th>Documento</th></tr></thead><tbody>
             @for (s of subscriptions(); track s.id) { <tr><td>{{ s.company_name }}</td><td>{{ planName(s.plan_name) }}</td><td>{{ state(s.status) }}</td>
               <td>{{ s.expires_at | date:'dd/MM/yyyy' }}</td><td>{{ s.source === 'MANUAL' ? 'Asignación manual' : 'PayPal' }}</td>
-              <td>{{ s.source === 'MANUAL' ? 'Sin cobro' : (s.amount | number:'1.2-2') + ' ' + s.currency }}</td><td>@if (s.source === 'MANUAL') { <button class="secondary" (click)="downloadAssignment(s.id)">Nota PDF</button> }</td></tr>
+              <td>{{ s.source === 'MANUAL' ? 'Sin cobro' : (s.amount | number:'1.2-2') + ' ' + s.currency }}</td><td>@if (s.source === 'MANUAL') { <button class="secondary" (click)="downloadAssignment(s.id)">Nota PDF</button><ns-email-document [pdfPath]="'/platform/subscriptions/' + s.id + '/pdf'" /> }</td></tr>
             } @empty { <tr><td colspan="7">No hay suscripciones registradas.</td></tr> }
           </tbody></table></div></section>
         }

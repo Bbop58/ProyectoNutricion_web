@@ -492,8 +492,8 @@
                   Cancelar
                 </button>
               }
-            <button class="ns-btn" (click)="downloadAppointment(a.id)">{{ a.status === 'CANCELLED' ? 'Cancelación PDF' : 'Constancia PDF' }}</button>
-@if (a.payment_status === 'PAID') { <button class="ns-btn" (click)="downloadAppointment(a.id, true)">Recibo PDF</button> }
+            <button class="ns-btn" (click)="downloadAppointment(a.id)">{{ a.status === 'CANCELLED' ? 'Cancelación PDF' : 'Constancia PDF' }}</button><ns-email-document [pdfPath]="'/appointments/' + a.id + '/pdf'" />
+@if (a.payment_status === 'PAID') { <button class="ns-btn" (click)="downloadAppointment(a.id, true)">Recibo PDF</button><ns-email-document [pdfPath]="'/appointments/' + a.id + '/receipt/pdf'" /> }
 </article>
           } @empty {
             <div class="ns-empty">
@@ -915,7 +915,7 @@
             </div>
             <button class="ns-btn" (click)="downloadReceipt(r)" [disabled]="!!busy()">
               <ns-icon name="download" />Descargar PDF
-            </button>
+            </button><ns-email-document [pdfPath]="'/subscriptions/receipts/' + r.id + '/pdf'" />
           </div>
         } @empty {
           <p class="ns-empty">

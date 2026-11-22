@@ -651,7 +651,7 @@
               Sandbox
             </p>
           </div>
-          <div class="header-actions"><button class="btn-outline" (click)="downloadCompanyPlan()">Nota de asignación PDF</button>
+          <div class="header-actions"><button class="btn-outline" (click)="downloadCompanyPlan()">Nota de asignación PDF</button><ns-email-document pdfPath="/subscriptions/current/assignment/pdf" />
             <button
               (click)="loadPaymentData()"
               class="btn-outline"
@@ -1313,7 +1313,7 @@
                               <polyline points="7 10 12 15 17 10"></polyline>
                               <line x1="12" y1="15" x2="12" y2="3"></line>
                             </svg>
-                          </button>
+                          </button><ns-email-document [pdfPath]="'/payments/' + p.id + '/pdf'" />
                         </div>
                       </td>
                       <td>
@@ -3415,9 +3415,9 @@
                       </td>
                       <td style="text-align: right">
                         <div class="action-buttons-group">
-                          <button class="btn-outline" [disabled]="downloadingDocument()" (click)="downloadDocument('/appointments/' + appt.id + '/pdf', 'Constancia_cita_' + appt.id + '.pdf')">{{ appt.status === 'CANCELLED' ? 'Cancelación PDF' : 'Constancia PDF' }}</button>
+                          <button class="btn-outline" [disabled]="downloadingDocument()" (click)="downloadDocument('/appointments/' + appt.id + '/pdf', 'Constancia_cita_' + appt.id + '.pdf')">{{ appt.status === 'CANCELLED' ? 'Cancelación PDF' : 'Constancia PDF' }}</button><ns-email-document [pdfPath]="'/appointments/' + appt.id + '/pdf'" />
                           @if (appt.payment_status === 'PAID') {
-                            <button class="btn-outline" [disabled]="downloadingDocument()" (click)="downloadDocument('/appointments/' + appt.id + '/receipt/pdf', 'Recibo_cita_' + appt.id + '.pdf')">Recibo PDF</button>
+                            <button class="btn-outline" [disabled]="downloadingDocument()" (click)="downloadDocument('/appointments/' + appt.id + '/receipt/pdf', 'Recibo_cita_' + appt.id + '.pdf')">Recibo PDF</button><ns-email-document [pdfPath]="'/appointments/' + appt.id + '/receipt/pdf'" />
                           }
 
                           @if (appt.status === 'PENDING') {
@@ -4078,7 +4078,7 @@
           <button class="btn-outline" (click)="loadSavedReports()">Actualizar historial</button>
           @for (report of savedReports(); track report.id) {
             <div style="display: flex; gap: 12px; align-items: center; margin-top: 12px">
-              <span>{{ report.title }} · {{ report.created_at | date: 'dd/MM/yyyy HH:mm' }}</span
+              <ns-email-document [pdfPath]="'/reports/saved/' + report.id + '/export?file_format=pdf'" [excelPath]="'/reports/saved/' + report.id + '/export?file_format=excel'" /><span>{{ report.title }} · {{ report.created_at | date: 'dd/MM/yyyy HH:mm' }}</span
               ><button class="btn-outline" (click)="openSavedReport(report.id)">
                 Ver resultado guardado</button
               ><button class="btn-outline" (click)="deleteSavedReport(report.id)">Eliminar</button>
@@ -4522,6 +4522,7 @@
                   }
                 </button>
 
+                <ns-email-document pdfPath="/reports/export/pdf" excelPath="/reports/export/excel" [payload]="currentReportRequest()" [disabled]="!reportPreviewIsCurrent()" />
                 <button (click)="exportReportExcel()" class="btn-outline btn-sm">
                   Descargar Excel
                 </button>
@@ -6251,7 +6252,7 @@
                 <span>{{
                   isExportingPaymentPdf() ? 'Generando PDF...' : 'Exportar Detalle (PDF)'
                 }}</span>
-              </button>
+              </button><ns-email-document [pdfPath]="'/payments/' + selectedPaymentForDetail()!.id + '/pdf'" />
             </div>
           </div>
         </div>

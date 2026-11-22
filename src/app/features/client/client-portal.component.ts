@@ -1,4 +1,5 @@
 import { DocumentService } from '../../core/services/document.service';
+import { EmailDocumentComponent } from '../../shared/ui/email-document.component';
 import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
@@ -74,6 +75,7 @@ interface FoodRecord {
     RouterLink,
     IconComponent,
     NutritionDiaryComponent,
+    EmailDocumentComponent,
   ],
   templateUrl: './client-portal.component.html',
   styleUrl: './client-portal.component.css',
