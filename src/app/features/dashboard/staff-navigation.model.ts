@@ -65,6 +65,7 @@ export const STAFF_PACKAGES: readonly StaffNavigationPackage[] = [
 ];
 
 export function staffPackagesForRole(role: string): StaffNavigationPackage[] {
+  if (role === 'SUPERADMIN') return [];
   if (!staffRoles.includes(role)) return [];
   return STAFF_PACKAGES.map((group) => ({
     ...group,
@@ -72,6 +73,7 @@ export function staffPackagesForRole(role: string): StaffNavigationPackage[] {
   })).filter((group) => group.items.length > 0);
 }
 export function canOpenStaffTab(role: string, tab: string): boolean {
+  if (role === 'SUPERADMIN') return false;
   return (
     staffRoles.includes(role) &&
     (tab === STAFF_DASHBOARD.tab ||

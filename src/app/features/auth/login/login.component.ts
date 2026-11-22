@@ -81,7 +81,8 @@ export class LoginComponent {
 
     this.authService.login({ email: email.trim(), password }).subscribe({
       next: (result) => {
-        if (result.user.role_id === 'CLIENTE') this.enterWorkspace();
+        if (result.user.role_id === 'SUPERADMIN') void this.router.navigate(['/platform']);
+        else if (result.user.role_id === 'CLIENTE') this.enterWorkspace();
         else this.chooseWorkspace.set(true);
       },
       error: (err) => {

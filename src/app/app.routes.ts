@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard, guestGuard } from './core/guards/auth.guard';
+import { authGuard, guestGuard, platformGuard, operationalGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   {
@@ -36,10 +36,15 @@ export const routes: Routes = [
     canActivate: [guestGuard],
   },
   {
+    path: 'platform',
+    loadComponent: () => import('./features/platform/platform.component').then(m => m.PlatformComponent),
+    canActivate: [authGuard, platformGuard],
+  },
+  {
     path: 'dashboard',
     loadComponent: () =>
       import('./features/dashboard/dashboard.component').then((m) => m.DashboardComponent),
-    canActivate: [authGuard],
+    canActivate: [authGuard, operationalGuard],
   },
   {
     path: 'paypal-return',
