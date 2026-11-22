@@ -64,11 +64,7 @@
           </button>
         </div>
         @if (loginForm.get('password')?.touched && loginForm.get('password')?.invalid) {
-          <span class="auth-error" id="login-password-error">{{
-            loginForm.get('password')?.hasError('required')
-              ? 'Ingresa tu contraseña.'
-              : 'Usa al menos 8 caracteres, mayúscula, minúscula, número y símbolo.'
-          }}</span>
+          <span class="auth-error" id="login-password-error">Ingresa tu contraseña.</span>
         }
       </div>
       <button
