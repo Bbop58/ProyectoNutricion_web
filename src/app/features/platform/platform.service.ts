@@ -21,7 +21,9 @@ export interface Page<T> { items: T[]; total: number; }
 export class PlatformService {
   private http = inject(HttpClient);
   private api = `${environment.apiUrl}/platform`;
-  overview() { return this.http.get<Record<string, number>>(`${this.api}/overview`); }
+  overview(params: Record<string,string> = {}) { return this.http.get<any>(`${this.api}/overview`,{params}); }
+  incidents(params: Record<string,string> = {}) { return this.http.get<any[]>(`${this.api}/incidents`,{params}); }
+  resolveIncident(id: string, reason: string) { return this.http.put(`${this.api}/incidents/${id}/resolve`,{reason,is_active:false}); }
   companies(q = '', offset = 0) { return this.http.get<Page<PlatformCompany>>(`${this.api}/companies`, { params: { q, offset } }); }
   plans() { return this.http.get<PlatformPlan[]>(`${this.api}/plans`); }
   subscriptions(offset = 0) { return this.http.get<Page<PlatformSubscription>>(`${this.api}/subscriptions`, { params: { offset } }); }

@@ -341,6 +341,7 @@
       <!-- ============================================================= -->
       @if (activeTab() === 'principal') {
         <app-staff-overview (navigate)="navigateFromOverview($event)" />
+        <ns-care-workspace />
       }
       @if (activeTab() === 'alimentacion') {
         <app-nutrition-diary />

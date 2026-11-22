@@ -1,4 +1,5 @@
 import { SubscriptionDocumentsComponent } from '../../shared/ui/subscription-documents.component';
+import { CareWorkspaceComponent } from '../care/care-workspace.component';
 import { EmailDocumentComponent } from '../../shared/ui/email-document.component';
 import { OfflinePanelComponent } from '../../shared/ui/offline-panel.component';
 import { OfflineService } from '../../core/services/offline.service';
@@ -98,6 +99,7 @@ import { ModalRestaurarBackupComponent } from '../copias-seguridad/modal-restaur
   standalone: true,
   imports: [
     SubscriptionDocumentsComponent,
+    CareWorkspaceComponent,
     EmailDocumentComponent,
     OfflinePanelComponent,
     UserAvatarComponent,

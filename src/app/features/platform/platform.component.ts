@@ -28,10 +28,23 @@ import { PlatformService, PlatformCompany, PlatformPlan, PlatformSubscription } 
         @if (message()) { <p role="status" class="success">{{ message() }}</p> }
         @if (loading()) { <p role="status">Cargando información…</p> }
         @if (tab() === 'overview') {
+          <form class="panel form-grid" (ngSubmit)="load()">
+            <label>Empresa<select name="filterCompany" [(ngModel)]="filterCompany"><option value="">Todas</option>@for (c of filterCompanies(); track c.id) { <option [value]="c.id">{{ c.name }}</option> }</select></label>
+            <label>Altas desde<input name="filterStart" type="date" [(ngModel)]="filterStart" /></label><label>Altas hasta<input name="filterEnd" type="date" [(ngModel)]="filterEnd" /></label>
+            <button [disabled]="loading()">Aplicar filtros</button>
+          </form>
+          @if (updatedAt()) { <p>Actualizado: {{ updatedAt() | date:'dd/MM/yyyy HH:mm' }}. {{ metricExplanation() }}</p> }
           <section class="stats">
             @for (card of cards; track card.key) {
               <article><span>{{ card.label }}</span><strong>{{ overview()[card.key] || 0 }}</strong></article>
             }
+          </section>
+          <section class="panel"><h2>Incidencias de la API</h2><p>Errores inesperados registrados por la API. El período filtra su fecha; las incidencias son globales y no contienen datos clínicos.</p>
+            <label>Nota de resolución<input [(ngModel)]="incidentReason" placeholder="Causa corregida o medida aplicada" maxlength="500" /></label>
+            <div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Ruta</th><th>Error</th><th>Estado</th><th>Acción</th></tr></thead><tbody>
+              @for (i of incidents(); track i.id) { <tr><td>{{ i.created_at | date:'dd/MM/yyyy HH:mm' }}</td><td>{{ i.method }} {{ i.route }}</td><td>{{ i.error_type }}</td><td>{{ i.status }} {{ i.resolution || '' }}</td><td>@if (i.status === 'OPEN') { <button (click)="resolve(i.id)" [disabled]="busy() || incidentReason.trim().length < 3">Resolver</button> }</td></tr> }
+              @empty { <tr><td colspan="5">No hay incidencias en este período.</td></tr> }
+            </tbody></table></div>
           </section>
           <section class="panel"><h2>Empresas y suscripciones</h2><p>Gestiona el estado de las empresas, sus planes comerciales y la vigencia de sus suscripciones.</p>
             <button (click)="navigate('companies')">Ver empresas</button></section>
@@ -141,6 +154,11 @@ export class PlatformComponent implements OnInit {
   selectedCompany = signal<PlatformCompany | null>(null);
   search = ''; reason = ''; assignedPlan = ''; draft: PlatformPlan | null = null; creating = true;
   private version = 0;
+  filterCompany = ''; filterStart = ''; filterEnd = ''; incidentReason = '';
+  filterCompanies = signal<PlatformCompany[]>([]); incidents = signal<any[]>([]);
+  updatedAt = signal(''); metricExplanation = signal('');
+  private monitorFilters() { const p: Record<string,string> = {}; if (this.filterCompany) p['tenant_id'] = this.filterCompany; if (this.filterStart) p['start_date'] = this.filterStart; if (this.filterEnd) p['end_date'] = this.filterEnd; return p; }
+  resolve(id: string) { this.mutate(this.api.resolveIncident(id,this.incidentReason.trim()),'Incidencia resuelta.');this.incidentReason = ''; }
   ngOnInit() { this.load(); }
   heading() { return this.menu.find(m => m.key === this.tab())?.label || 'Inicio'; }
   navigate(tab: string) { this.tab.set(tab); this.offset.set(0); this.error.set(''); this.message.set(''); this.load(); }
@@ -150,9 +168,14 @@ export class PlatformComponent implements OnInit {
     const version = ++this.version;
     this.loading.set(true); this.error.set('');
     this.api.plans().subscribe({ next: p => this.plans.set(p), error: e => this.fail(e) });
+    if (this.tab() === 'overview') {
+      this.api.companies().subscribe({next: data => this.filterCompanies.set(data.items),error: e => this.fail(e)});
+      const params = this.monitorFilters(); delete params['tenant_id'];
+      this.api.incidents(params).subscribe({next: data => { if (version === this.version) this.incidents.set(Array.isArray(data) ? data : []); },error: e => this.fail(e)});
+    }
     const complete = () => { if (version === this.version) this.loading.set(false); };
     const fail = (e: any) => { if (version === this.version) { this.fail(e); complete(); } };
-    if (this.tab() === 'overview') this.api.overview().subscribe({ next: data => { if (version === this.version) this.overview.set(data); complete(); }, error: fail });
+    if (this.tab() === 'overview') this.api.overview(this.monitorFilters()).subscribe({ next: data => { if (version === this.version) { this.overview.set(data); this.updatedAt.set(data.generated_at || ''); this.metricExplanation.set(data.explanation || ''); } complete(); }, error: fail });
     else if (this.tab() === 'plans') complete();
     else if (this.tab() === 'companies') this.api.companies(this.search, this.offset()).subscribe({ next: data => { if (version === this.version) { this.companies.set(data.items); this.total.set(data.total); } complete(); }, error: fail });
     else if (this.tab() === 'subscriptions') this.api.subscriptions(this.offset()).subscribe({ next: data => { if (version === this.version) { this.subscriptions.set(data.items); this.total.set(data.total); } complete(); }, error: fail });

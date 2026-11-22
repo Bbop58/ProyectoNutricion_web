@@ -1,0 +1,95 @@
+<details class="care-shell" (toggle)="opened($event)">
+  <summary>Seguimiento y mensajes</summary>
+  <p>Mediciones, registro de comidas y comunicación con tu equipo de nutrición.</p>
+  <nav class="care-tabs" aria-label="Herramientas de seguimiento">
+    <button type="button" [class.active]="tab === 'progress'" (click)="tab = 'progress'">Seguimiento</button>
+    @if (canChat()) { <button type="button" [class.active]="tab === 'messages'" (click)="tab = 'messages'">Mensajes</button> }
+    @if (!isPatient()) {
+      <button type="button" [class.active]="tab === 'reviews'" (click)="tab = 'reviews'">Revisión de IA</button>
+      <button type="button" [class.active]="tab === 'config'" (click)="tab = 'config'">Parámetros</button>
+      <button type="button" [class.active]="tab === 'import'" (click)="tab = 'import'">Importar pacientes</button>
+    }
+  </nav>
+  @if (error()) { <p role="alert" class="care-error">{{ error() }}</p> }
+  @if (message()) { <p role="status" class="care-success">{{ message() }}</p> }
+  @if (busy()) { <p role="status">Procesando…</p> }
+  @if ((tab === 'progress' || tab === 'reviews') && !isPatient()) {
+    <label>Paciente<select [(ngModel)]="patientId" (change)="selectPatient()" [disabled]="busy()"><option value="">Selecciona un paciente</option>
+      @for (p of patients(); track p.id) { <option [value]="p.id">{{ p.full_name }}</option> }
+    </select></label>
+  }
+  @if (tab === 'progress') {
+    <form class="care-row" (ngSubmit)="assess()" #range="ngForm">
+      <label>Desde<input name="start" type="date" required [(ngModel)]="start" /></label><label>Hasta<input name="end" type="date" required [(ngModel)]="end" /></label>
+      <button [disabled]="busy() || !patientId || range.invalid">Ver seguimiento</button>
+    </form>
+    <details class="care-section"><summary>Registrar una medición</summary><form class="care-row" (ngSubmit)="addMeasurement()" #measurement="ngForm">
+      <label>Peso (kg)<input name="weight" type="number" step="0.1" min="0.1" max="500" required [(ngModel)]="weight" /></label>
+      <label>Talla (cm)<input name="height" type="number" step="0.1" min="30" max="260" required [(ngModel)]="height" /></label>
+      <label>Fecha<input name="measurementDate" type="date" required [(ngModel)]="measurementDate" /></label><button [disabled]="busy() || !patientId || measurement.invalid">Guardar medición</button>
+    </form></details>
+    @if (result(); as r) {
+      <div class="care-stats"><strong>{{ r.adherence_percent === null ? 'Sin días aplicables en el período' : r.adherence_percent + '% de registro' }}</strong><span>{{ r.registered }} comidas registradas · {{ r.expected }} esperadas</span><span>{{ r.missing_days.length }} días sin registros</span></div>
+      <progress max="100" [value]="r.adherence_percent" aria-label="Adherencia al registro de comidas"></progress>
+      <p>{{ r.explanation }}</p><small>{{ r.formula }} Horario: Bolivia. Configuración v{{ r.configuration.version }}.</small>
+      @if (r.inactivity.alert) { <p class="care-error" role="status">Seguimiento pendiente: {{ r.inactivity.days }} días sin registros. Umbral: {{ r.inactivity.threshold }} días.</p> }
+      <h3>Evolución del peso</h3>
+      @if (r.measurements.length > 1) { <svg viewBox="0 0 600 160" role="img" aria-label="Evolución del peso en orden de fecha; valores en la tabla"><polyline [attr.points]="chartPoints()" fill="none" stroke="#087f77" stroke-width="3" /></svg> }
+      <div class="care-table"><table><thead><tr><th>Fecha</th><th>Peso (kg)</th><th>Talla (cm)</th><th>IMC</th></tr></thead><tbody>
+        @for (m of r.measurements; track m.id) { <tr><td>{{ m.measured_at | date:'dd/MM/yyyy' }}</td><td>{{ m.weight_kg }}</td><td>{{ m.height_cm }}</td><td>{{ m.bmi }}</td></tr> }
+        @empty { <tr><td colspan="4">No hay mediciones históricas en este período.</td></tr> }
+      </tbody></table></div>
+      @for (h of r.habits; track h.label) { <p>{{ h.label }}: {{ h.value }} {{ h.unit }} · Meta configurada: {{ h.target }} · {{ h.fulfilled ? 'Meta alcanzada' : 'Por revisar' }}</p> }
+      @for (note of r.notes; track note) { <p>{{ note }}</p> }
+      <details class="care-section"><summary>Comidas por día y datos faltantes</summary><div class="care-table"><table><thead><tr><th>Día</th><th>Registradas</th><th>Meta</th><th>Origen</th></tr></thead><tbody>
+        @for (d of r.days; track d.date) { <tr><td>{{ d.date }}</td><td>{{ d.registered }}</td><td>{{ d.expected }}</td><td>{{ d.plan_id ? 'Plan aprobado' : 'Configuración' }}</td></tr> }
+      </tbody></table></div></details>
+    }
+    @if (assessments().length) { <details class="care-section"><summary>Evaluaciones guardadas</summary>
+      @for (a of assessments(); track a.id) { <button type="button" class="secondary" (click)="result.set(a.snapshot)">{{ a.created_at | date:'dd/MM/yyyy HH:mm' }} · {{ a.snapshot.start_date }} a {{ a.snapshot.end_date }} · v{{ a.snapshot.configuration.version }}</button> }
+    </details> }
+  }
+  @if (tab === 'messages' && canChat()) {
+    <label>Conversar con<select [(ngModel)]="peerId" (change)="loadThread()" [disabled]="busy()"><option value="">Selecciona un contacto vinculado</option>@for (p of contacts(); track p.id) { <option [value]="p.id">{{ p.full_name }}</option> }</select></label>
+    @if (!contacts().length) { <p>Necesitas un vínculo activo paciente–nutricionista para conversar.</p> }
+    <div class="care-row"><button type="button" class="secondary" (click)="loadThread()" [disabled]="busy() || !peerId">Actualizar mensajes</button>@if (hasMore) { <button type="button" class="secondary" (click)="older()" [disabled]="busy()">Mensajes anteriores</button> }</div>
+    <div class="care-messages" aria-live="polite">@for (m of messages(); track m.id) { <article [class.mine]="m.sender_id === auth.currentUser()?.id"><strong>{{ m.sender_id === auth.currentUser()?.id ? 'Vos' : 'Tu contacto' }}</strong><p>{{ m.content }}</p><small>{{ m.created_at | date:'dd/MM/yyyy HH:mm' }}</small></article> } @empty { <p>No hay mensajes cargados.</p> }</div>
+    <form (ngSubmit)="send()" #chat="ngForm"><label>Mensaje<textarea name="content" rows="3" maxlength="4000" required [(ngModel)]="text" [disabled]="busy()"></textarea></label><button [disabled]="busy() || !peerId || !text.trim() || chat.invalid">Enviar mensaje</button></form>
+  }
+  @if (tab === 'reviews' && !isPatient()) {
+    <button type="button" (click)="loadPlans()" [disabled]="busy() || !patientId">Cargar planes y recomendaciones</button>
+    <label>Plan<select [(ngModel)]="planId" (change)="loadReviews()"><option value="">Selecciona un plan</option>@for (p of plans(); track p.id) { <option [value]="p.id">{{ p.title }} · {{ p.status }}</option> }</select></label>
+    @if (selectedPlan(); as p) {
+      <p><strong>Origen:</strong> borrador de plan nutricional IA · {{ p.created_at | date:'dd/MM/yyyy HH:mm' }} · {{ p.goal }}</p><p>{{ p.daily_calories }} kcal · {{ p.meals_per_day }} comidas/día</p>
+      <details class="care-section"><summary>Contenido de la recomendación</summary>@for (meal of p.meals; track $index) { <p><strong>{{ meal.meal_name }}</strong></p>@for (food of meal.foods; track $index) { <p>{{ food.name }} · {{ food.portion }}</p> } }</details>
+      @if (p.status === 'DRAFT') {
+        <form #reviewForm="ngForm"><label>Corrección de las indicaciones<textarea name="correction" [(ngModel)]="correction" maxlength="5000" rows="3"></textarea></label><label>Motivo de la decisión<textarea name="reason" [(ngModel)]="reason" required minlength="3" maxlength="2000" rows="2"></textarea></label>
+          <div class="care-row"><button type="button" (click)="review('CORRECTED')" [disabled]="busy() || reason.trim().length < 3 || !correction.trim()">Guardar corrección</button><button type="button" (click)="review('APPROVED')" [disabled]="busy() || reason.trim().length < 3">Aprobar y asignar</button><button type="button" class="secondary" (click)="review('REJECTED')" [disabled]="busy() || reason.trim().length < 3">Rechazar</button></div>
+        </form>
+      } @else { <p>Este plan ya tiene una decisión. Para cambiar un plan vigente, genera un nuevo borrador desde Atención nutricional.</p> }
+      @for (r of reviews(); track r.id) { <article class="care-section"><strong>{{ r.decision }}</strong> · {{ r.actor_name }} · {{ r.created_at | date:'dd/MM/yyyy HH:mm' }}<p>{{ r.reason }}</p><p>Antes: {{ r.before.clinical_notes || 'Sin indicaciones' }}</p><p>Después: {{ r.after.clinical_notes || 'Sin indicaciones' }}</p></article> }
+    }
+  }
+  @if (tab === 'config' && !isPatient() && config) {
+    <p>Versión {{ config.version }} · Parámetros de tu empresa. La meta del plan aprobado prevalece para las comidas.</p>
+    <form (ngSubmit)="saveConfig()" #configForm="ngForm"><div class="care-row">
+      <label>Meta sin plan (comidas/día)<input name="meals" type="number" min="1" max="12" step="1" required [(ngModel)]="config.values.meals_per_day" /></label>
+      <label>Alerta de inactividad (días)<input name="inactive" type="number" min="1" max="90" step="1" required [(ngModel)]="config.values.inactivity_days" /></label>
+      <label>Meta de agua (L/día)<input name="water" type="number" min="0.1" max="10" step="0.1" required [(ngModel)]="config.values.water_liters" /></label>
+      <label>Meta de sueño (h/día)<input name="sleep" type="number" min="1" max="24" step="0.1" required [(ngModel)]="config.values.sleep_hours" /></label>
+    </div><label>Motivo<textarea name="configReason" [(ngModel)]="configReason" minlength="3" maxlength="500" required></textarea></label><button [disabled]="busy() || configForm.invalid || configReason.trim().length < 3">Guardar nueva versión</button></form>
+    <button type="button" class="secondary" (click)="loadVersions()">Ver versiones</button>
+    @for (v of versions(); track v.version) { <p>v{{ v.version }} · {{ v.created_at | date:'dd/MM/yyyy HH:mm' }} · {{ v.reason }} · Comidas: {{ v.values.meals_per_day }}, inactividad: {{ v.values.inactivity_days }} días, agua: {{ v.values.water_liters }} L/día, sueño: {{ v.values.sleep_hours }} h/día.</p> }
+  }
+  @if (tab === 'import' && !isPatient()) {
+    <p>CSV de hasta 1 MB y 100 pacientes. Columnas: full_name, email, password; phone es opcional. La contraseña requiere 8 caracteres, mayúscula, minúscula, número y símbolo. Se usa tu empresa y sucursal activa.</p>
+    <button type="button" class="secondary" (click)="template()">Descargar plantilla CSV</button>
+    <label>Archivo de pacientes<input type="file" accept=".csv,text/csv" (change)="readFile($event)" [disabled]="busy()" /></label><button type="button" (click)="previewImport()" [disabled]="busy() || !csv">Analizar {{ fileName }}</button>
+    @if (preview(); as p) {
+      <p>{{ p.total }} filas · {{ p.accepted }} aceptadas · {{ p.rejected }} rechazadas. Todavía no se crearon pacientes. Confirma durante los próximos 15 minutos.</p>
+      <div class="care-table"><table><thead><tr><th>Fila</th><th>Nombre</th><th>Correo</th><th>Resultado</th></tr></thead><tbody>@for (row of p.rows; track row.row) { <tr><td>{{ row.row }}</td><td>{{ row.full_name }}</td><td>{{ row.email }}</td><td>{{ row.error || 'Aceptada' }}</td></tr> }</tbody></table></div>
+      <button type="button" (click)="confirmImport()" [disabled]="busy() || !p.accepted">Confirmar importación de {{ p.accepted }} pacientes</button><button type="button" class="secondary" (click)="preview.set(null)" [disabled]="busy()">Cancelar</button>
+    }
+    @if (imported(); as r) { <p role="status">{{ r.created }} pacientes creados · {{ r.rejected }} filas rechazadas.</p>@for (e of r.errors; track e.row) { <p>Fila {{ e.row }}: {{ e.error }}</p> } }
+  }
+</details>
