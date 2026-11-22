@@ -3597,6 +3597,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
 
     try {
+      let recognitionFailed = false;
       this.speechRecognition = new SpeechRecognition();
       this.speechRecognition.lang = 'es-ES';
       this.speechRecognition.continuous = false;
@@ -3618,16 +3619,23 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.speechRecognition.onend = () => {
         this.isRecordingVoice.set(false);
         const text = this.voiceTranscript().trim();
-        if (text) {
+        if (text && !recognitionFailed) {
           this.processVoiceReportCommand(text);
         }
       };
 
       this.speechRecognition.onerror = (event: any) => {
+        recognitionFailed = true;
         this.isRecordingVoice.set(false);
-        if (event.error !== 'no-speech') {
-          this.reportError.set(`Error de micrófono: ${event.error}`);
-        }
+        const messages: Record<string, string> = {
+          network: 'El navegador no pudo conectar con el servicio de transcripción. En Brave el dictado puede no estar disponible. Escribe tu consulta o prueba el dictado en Chrome.',
+          'not-allowed': 'El permiso de micrófono está bloqueado. Habilítalo para este sitio o escribe tu consulta.',
+          'service-not-allowed': 'El navegador no permite usar el servicio de dictado. Puedes escribir tu consulta o probar en Chrome.',
+          'audio-capture': 'No se detectó un micrófono disponible. Comprueba el dispositivo o escribe tu consulta.',
+          'no-speech': 'No se detectó voz. Intenta nuevamente o escribe tu consulta.',
+          aborted: 'Se interrumpió el dictado. Puedes reintentarlo o escribir tu consulta.',
+        };
+        this.reportError.set(messages[event.error] || 'No se pudo transcribir la voz. Intenta nuevamente o escribe tu consulta.');
       };
 
       this.speechRecognition.start();

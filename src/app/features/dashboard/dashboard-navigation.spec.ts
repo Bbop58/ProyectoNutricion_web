@@ -218,6 +218,27 @@ describe('Exclusive staff navigation', () => {
     flushRequests();
     expect(fixture.componentInstance.activeTab()).toBe('principal');
   });
+  it('explains speech network failures without submitting partial text', () => {
+    const component = fixture.componentInstance;
+    let recognition: any;
+    class FakeRecognition {
+      start() { recognition = this; }
+      abort() {}
+    }
+    vi.stubGlobal('SpeechRecognition', FakeRecognition);
+    try {
+      component.startVoiceRecording();
+      component.voiceTranscript.set('Total de ingresos');
+      recognition.onerror({ error: 'network' });
+      recognition.onend();
+      expect(component.isRecordingVoice()).toBe(false);
+      expect(component.reportError()).toContain('servicio de transcrip');
+      expect(component.reportError()).toContain('Brave');
+      http.expectNone(r => r.url.endsWith('/reports/voice-command'));
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
   it('starts a fresh voice scope and hides manual date controls', () => {
     const component = fixture.componentInstance;
     component.setActiveTab('reportes', false);
