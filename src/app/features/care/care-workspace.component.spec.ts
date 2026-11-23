@@ -32,6 +32,7 @@ describe('Minimal nutritional care workspace', () => {
   it('previews CSV before confirming and displays rejected rows', () => {
     user.set({id:'admin',role_id:'ADMIN_ORGANIZATION'});
     const f=open();http.expectOne(r=>r.url.endsWith('/users/patients')).flush([]);
+    http.expectOne(r=>r.url.endsWith('/care/contacts')).flush([]);
     http.expectOne(r=>r.url.endsWith('/care/configuration')).flush({version:0,values:{}});
     const c=f.componentInstance;c.tab='import';c.csv='full_name,email,password\nAna,ana@example.com,Password123!';c.previewImport();
     http.expectOne(r=>r.url.endsWith('/patient-imports/preview')).flush({batch_id:'batch',total:2,accepted:1,rejected:1,rows:[{row:2,full_name:'Ana',email:'ana@example.com',error:null},{row:3,full_name:'Duplicada',email:'ana@example.com',error:'Duplicada'}]});
@@ -46,5 +47,20 @@ describe('Minimal nutritional care workspace', () => {
     const req=http.expectOne(r=>r.url.endsWith('/care/conversations/doctor')&&r.method==='POST');expect(req.request.body.content).toBe('Consulta de porciones');req.flush({id:'message'});
     http.expectOne(r=>r.url.endsWith('/care/conversations/doctor')).flush({items:[{id:'message',sender_id:'patient',content:'Consulta de porciones'}],has_more:false});
     expect(c.text).toBe('');expect(c.messages().length).toBe(1);
+  });
+  it('allows the company administrator to use messages alongside clinical tools', () => {
+    user.set({id:'admin',role_id:'ADMIN_ORGANIZATION'});
+    const f=open();
+    http.expectOne(r=>r.url.endsWith('/users/patients')).flush([]);
+    http.expectOne(r=>r.url.endsWith('/care/configuration')).flush({version:0,values:{}});
+    http.expectOne(r=>r.url.endsWith('/care/contacts')).flush([{id:'patient',full_name:'Ana'}]);
+    f.componentInstance.tab='messages';f.detectChanges();
+    expect(f.componentInstance.canChat()).toBe(true);
+    expect(f.nativeElement.textContent).toContain('Enviar mensaje');
+    expect(f.nativeElement.textContent).toContain('Revisión de IA');
+    expect(f.nativeElement.textContent).toContain('Parámetros');
+    const c=f.componentInstance;c.peerId='patient';c.text='Seguimiento desde administración';c.send();
+    http.expectOne(r=>r.url.endsWith('/care/conversations/patient')&&r.method==='POST').flush({id:'m'});
+    http.expectOne(r=>r.url.endsWith('/care/conversations/patient')&&r.method==='GET').flush({items:[],has_more:false});
   });
 });

@@ -25,7 +25,7 @@ export class CareWorkspaceComponent {
   config: any = null; configReason = ''; csv = ''; fileName = ''; offset = 0; hasMore = false;
   private loaded = false;
   isPatient() { return this.auth.currentUser()?.role_id === 'CLIENTE'; }
-  canChat() { return ['CLIENTE','NUTRICIONISTA'].includes(this.auth.currentUser()?.role_id || ''); }
+  canChat() { return ['CLIENTE','NUTRICIONISTA','ADMIN_ORGANIZATION'].includes(this.auth.currentUser()?.role_id || ''); }
   run<T>(request: Observable<T>, success: (value: T) => void) {
     if (this.busy()) return;
     this.busy.set(true); this.error.set(''); this.message.set('');
