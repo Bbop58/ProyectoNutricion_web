@@ -1,4 +1,5 @@
 import { DocumentService } from '../../core/services/document.service';
+import { WalletRefundsComponent } from './wallet-refunds.component';
 import { EmailDocumentComponent } from '../../shared/ui/email-document.component';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -8,7 +9,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { PlatformService, PlatformCompany, PlatformPlan, PlatformSubscription } from './platform.service';
 
 @Component({
-  selector: 'ns-platform', standalone: true, imports: [CommonModule, FormsModule, EmailDocumentComponent],
+  selector: 'ns-platform', standalone: true, imports: [CommonModule, FormsModule, EmailDocumentComponent, WalletRefundsComponent],
   template: `
     <div class="platform-shell">
       <aside class="platform-nav">
@@ -27,6 +28,7 @@ import { PlatformService, PlatformCompany, PlatformPlan, PlatformSubscription } 
         @if (error()) { <p role="alert" class="error">{{ error() }}</p> }
         @if (message()) { <p role="status" class="success">{{ message() }}</p> }
         @if (loading()) { <p role="status">Cargando información…</p> }
+        @if (tab() === 'refunds') { <ns-wallet-refunds /> }
         @if (tab() === 'overview') {
           <form class="panel form-grid" (ngSubmit)="load()">
             <label>Empresa<select name="filterCompany" [(ngModel)]="filterCompany"><option value="">Todas</option>@for (c of filterCompanies(); track c.id) { <option [value]="c.id">{{ c.name }}</option> }</select></label>
@@ -146,7 +148,7 @@ export class PlatformComponent implements OnInit {
   }
   private api = inject(PlatformService);
   readonly Math = Math;
-  readonly menu = [{ key: 'overview', label: 'Inicio' }, { key: 'companies', label: 'Empresas' }, { key: 'plans', label: 'Planes' }, { key: 'subscriptions', label: 'Suscripciones' }, { key: 'audit', label: 'Historial de cambios' }];
+  readonly menu = [{ key: 'overview', label: 'Inicio' }, { key: 'companies', label: 'Empresas' }, { key: 'plans', label: 'Planes' }, { key: 'subscriptions', label: 'Suscripciones' }, { key: 'refunds', label: 'Devoluciones a wallet' }, { key: 'audit', label: 'Historial de cambios' }];
   readonly cards = [{ key: 'companies', label: 'Empresas' }, { key: 'active_companies', label: 'Activas' }, { key: 'inactive_companies', label: 'Inactivas' }, { key: 'active_subscriptions', label: 'Suscripciones vigentes' }, { key: 'expiring_subscriptions', label: 'Vencen en 7 días' }];
   tab = signal('overview'); overview = signal<Record<string, number>>({}); companies = signal<PlatformCompany[]>([]);
   plans = signal<PlatformPlan[]>([]); subscriptions = signal<PlatformSubscription[]>([]); history = signal<any[]>([]);
@@ -176,7 +178,7 @@ export class PlatformComponent implements OnInit {
     const complete = () => { if (version === this.version) this.loading.set(false); };
     const fail = (e: any) => { if (version === this.version) { this.fail(e); complete(); } };
     if (this.tab() === 'overview') this.api.overview(this.monitorFilters()).subscribe({ next: data => { if (version === this.version) { this.overview.set(data); this.updatedAt.set(data.generated_at || ''); this.metricExplanation.set(data.explanation || ''); } complete(); }, error: fail });
-    else if (this.tab() === 'plans') complete();
+    else if (this.tab() === 'plans' || this.tab() === 'refunds') complete();
     else if (this.tab() === 'companies') this.api.companies(this.search, this.offset()).subscribe({ next: data => { if (version === this.version) { this.companies.set(data.items); this.total.set(data.total); } complete(); }, error: fail });
     else if (this.tab() === 'subscriptions') this.api.subscriptions(this.offset()).subscribe({ next: data => { if (version === this.version) { this.subscriptions.set(data.items); this.total.set(data.total); } complete(); }, error: fail });
     else this.api.history(this.offset()).subscribe({ next: data => { if (version === this.version) { this.history.set(data.items); this.total.set(data.total); } complete(); }, error: fail });

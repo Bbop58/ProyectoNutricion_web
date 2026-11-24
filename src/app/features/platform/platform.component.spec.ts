@@ -27,11 +27,11 @@ describe('Platform console', () => {
       else request.flush({ items: [], total: 0 });
     }
   }
-  it('shows only the five administrative sections', () => {
+  it('shows administrative sections and wallet refund decisions', () => {
     const fixture = TestBed.createComponent(PlatformComponent);
     fixture.detectChanges(); flush(); fixture.detectChanges();
     const labels = Array.from(fixture.nativeElement.querySelectorAll('nav button')).map((b: any) => b.textContent.trim());
-    expect(labels).toEqual(['Inicio', 'Empresas', 'Planes', 'Suscripciones', 'Historial de cambios']);
+    expect(labels).toEqual(['Inicio', 'Empresas', 'Planes', 'Suscripciones', 'Devoluciones a wallet', 'Historial de cambios']);
     expect(fixture.nativeElement.querySelector('app-workspace-selector')).toBeNull();
     expect(fixture.nativeElement.textContent).not.toContain('Caja y cobros');
   });
