@@ -2,6 +2,7 @@ import { SubscriptionDocumentsComponent } from '../../shared/ui/subscription-doc
 import { CareWorkspaceComponent } from '../care/care-workspace.component';
 import { EmailDocumentComponent } from '../../shared/ui/email-document.component';
 import { RecipeImageComponent } from '../../shared/ui/recipe-image.component';
+import { StaffAssistantComponent } from '../staff-assistant/staff-assistant.component';
 import { OfflinePanelComponent } from '../../shared/ui/offline-panel.component';
 import { OfflineService } from '../../core/services/offline.service';
 import { StaffNavigationComponent } from './staff-navigation.component';
@@ -103,6 +104,7 @@ import { ModalRestaurarBackupComponent } from '../copias-seguridad/modal-restaur
     CareWorkspaceComponent,
     EmailDocumentComponent,
     RecipeImageComponent,
+    StaffAssistantComponent,
     OfflinePanelComponent,
     UserAvatarComponent,
     AvatarPickerComponent,
@@ -868,6 +870,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
         return 'Vincular con Clientes';
       case 'recetas':
         return 'Plan Nutricional';
+      case 'carlitos':
+        return 'Carlitos · Asistente';
       case 'historial-clinico':
         return 'Evaluación Nutricional';
       case 'citas':

@@ -343,6 +343,9 @@
         <app-staff-overview (navigate)="navigateFromOverview($event)" />
         <ns-care-workspace />
       }
+      @if (activeTab() === 'carlitos') {
+        @defer (on immediate) { <app-staff-assistant /> }
+      }
       @if (activeTab() === 'alimentacion') {
         <app-nutrition-diary />
       }
