@@ -1,81 +1,54 @@
 <section class="assistant" aria-labelledby="carlitos-title">
   <header class="intro">
     <div class="avatar" aria-hidden="true"><ns-icon name="leaf" /></div>
-    <div><p class="eyebrow">TU ASISTENTE DE TRABAJO</p><h2 id="carlitos-title">Carlitos</h2>
-      <p>Encontrá pacientes y elegí recetas según su ficha. Vos revisás y confirmás cada asignación.</p></div>
+    <div class="heading"><p class="eyebrow">TU ASISTENTE DE TRABAJO</p><h2 id="carlitos-title">Carlitos</h2><p>Contame qué necesitás. Seguimos la conversación desde acá.</p></div>
+    <button type="button" class="secondary" (click)="reset()" [disabled]="busy()">Nuevo chat</button>
   </header>
-
-  <div class="shortcuts" aria-label="Accesos rápidos de Carlitos">
-    <button type="button" class="secondary" (click)="showSearch.set(!showSearch())" [disabled]="busy()"><ns-icon name="users" /> Buscar paciente</button>
-    <button type="button" class="secondary" (click)="recommend()" [disabled]="busy()"><ns-icon name="leaf" /> Recomendar receta</button>
-    <button type="button" class="secondary" (click)="reset()" [disabled]="busy()">Nueva consulta</button>
-  </div>
-  @if (selected(); as patient) {
-    <div class="patient-context"><span><strong>Paciente seleccionado:</strong> {{ patient.full_name }}</span><button type="button" class="link-button" (click)="changePatient()" [disabled]="busy()">Cambiar paciente</button></div>
-  }
-  @if (showSearch()) {
-    <form class="search" (ngSubmit)="searchPatients()">
-      <label for="carlitos-patient-search">Nombre del paciente</label>
-      <div class="input-row"><input id="carlitos-patient-search" name="patientSearch" [(ngModel)]="search" maxlength="80" placeholder="Por ejemplo: Alex" [disabled]="busy()" /><button [disabled]="busy()">Buscar</button></div>
-    </form>
-  }
   <div class="conversation" aria-label="Conversación con Carlitos">
-    @if (!history().length && !reply()) {
-      <div class="welcome"><h3>¿Con qué paciente trabajamos?</h3><p>Podés escribir: «Recomendale una cena a Alex» o seleccionar un paciente para empezar.</p><small>Las consultas usan tu empresa y sucursal activas. El nutricionista trabaja con sus pacientes vinculados.</small></div>
+    @if (!turns().length) {
+      <div class="welcome"><h3>¿Con qué paciente trabajamos?</h3><p>Escribí «Buscá al paciente Alex» o «Recomendale una cena a Alex».</p><p>Después podés seguir: «Mostrame su anamnesis», «Otra opción», «Asignale la segunda».</p><small>Trabajo con los pacientes y recetas de tu espacio autorizado. Antes de guardar te pediré confirmación.</small></div>
     }
-    @for (turn of history(); track $index) {
-      <article class="turn"><p class="question"><span>Vos</span>{{ turn.question }}</p><p class="answer"><span>Carlitos</span>{{ turn.answer }}</p></article>
-    }
-  </div>
-  @if (busy()) { <p class="status" role="status">Carlitos está procesando tu pedido…</p> }
-  @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
-  @if (success()) { <p class="success" role="status">{{ success() }}</p> }
-  @if (reply(); as response) {
-    @if (response.kind === 'patients') {
-      <section class="patients" aria-label="Seleccionar paciente">
-        <p>{{ response.message }}</p>
-        @for (patient of response.patients; track patient.id) {
-          <button type="button" class="patient-option" (click)="selectPatient(patient)" [disabled]="busy()">{{ patient.full_name }} <span>Seleccionar →</span></button>
-        }
-        @if (response.has_more) { <p>Hay más coincidencias. Usá Buscar paciente e indicá un nombre más completo.</p> }
-      </section>
-    }
-    @if (response.profile; as profile) {
-      <div class="profile"><p><strong>Objetivo:</strong> {{ profile.goal }}</p><p><strong>Alergias registradas:</strong> {{ profile.allergies === '' ? 'Ninguna declarada' : (profile.allergies ?? 'Sin informar') }}</p>
-        @if (profile.pathologies) {<p><strong>Antecedentes:</strong> {{ profile.pathologies }}</p>}
-        @if (profile.preferences) {<p><strong>Preferencias:</strong> {{ profile.preferences }}</p>}
-      </div>
-    }
-    @if (response.kind === 'recipes' && !response.recipes?.length) {<p class="status">{{ response.message }}</p>}
-    <div class="recipes">
-      @for (recipe of response.recipes; track recipe.id) {
-        <article class="recipe">
-          <div class="photo"><ns-recipe-image [src]="recipe.image_url" [title]="recipe.title" [category]="recipe.category" /></div>
-          <div class="recipe-content"><span class="category">{{ recipe.category }} · {{ recipe.servings }} porción(es)</span><h3>{{ recipe.title }}</h3>
-            <p class="macros">{{ recipe.calories }} kcal · {{ recipe.protein }} g proteína · {{ recipe.carbohydrates }} g carbohidratos · {{ recipe.fats }} g grasas</p>
-            <ul>@for (reason of recipe.reasons; track reason) {<li>{{ reason }}</li>}</ul>
-            @for (warning of recipe.warnings; track warning) {<p class="warning">{{ warning }}</p>}
-            <details><summary>Ver ingredientes y preparación</summary><p>{{ recipe.ingredients }}</p><p>{{ recipe.instructions }}</p></details>
-            @if (pending()?.id === recipe.id) {
-              <section class="confirmation" aria-label="Confirmar asignación">
-                <h3>Confirmar asignación</h3><p>Asignar <strong>{{ recipe.title }}</strong> a <strong>{{ selected()?.full_name }}</strong>.</p>
-                <p>Confirmá después de revisar ficha, ingredientes y porción. La propuesta vence a los cinco minutos.</p>
-                <div class="shortcuts"><button type="button" (click)="confirm()" [disabled]="busy()">Confirmar asignación</button><button type="button" class="secondary" (click)="pending.set(null)" [disabled]="busy()">Volver</button></div>
-              </section>
-            } @else {
-              <button type="button" (click)="pending.set(recipe)" [disabled]="busy()">Asignar receta</button>
+    @for (turn of turns(); track turn.id) {
+      <article class="turn">
+        <div class="question"><span>Vos</span><p>{{ turn.question }}</p></div>
+        <div class="answer" [class.assigned]="turn.reply.kind === 'assigned'">
+          <span class="speaker">Carlitos</span><p class="answer-text">{{ turn.reply.message }}</p>
+          @if (turn.reply.patient; as patient) {<small class="patient-context">Paciente: {{ patient.full_name }}</small>}
+          @for (patient of turn.reply.patients; track patient.id; let i = $index) {
+            @if (isLatest(turn.id)) {<button type="button" class="patient-option secondary" (click)="send('Selecciono el ' + (i + 1))" [disabled]="busy()">{{ i + 1 }}. {{ patient.full_name }}</button>}
+            @else {<p>{{ i + 1 }}. {{ patient.full_name }}</p>}
+          }
+          @if (turn.reply.has_more) {<p>Hay más coincidencias. Escribí un nombre más completo.</p>}
+          @if (turn.reply.profile_details?.length) {
+            <dl class="profile">@for (item of turn.reply.profile_details; track item.label) {<div><dt>{{ item.label }}</dt><dd>{{ item.value }}</dd></div>}</dl>
+          }
+          <div class="recipes">
+            @for (recipe of turn.reply.recipes; track recipe.id; let i = $index) {
+              <article class="recipe">
+                <div class="photo"><ns-recipe-image [src]="recipe.image_url" [title]="recipe.title" [category]="recipe.category" /></div>
+                <div class="recipe-content"><small>{{ recipe.category }} · {{ recipe.servings }} porción(es)</small><h3>{{ i + 1 }}. {{ recipe.title }}</h3>
+                  <p class="macros">{{ recipe.calories }} kcal · {{ recipe.protein }} g proteína · {{ recipe.carbohydrates }} g carbohidratos · {{ recipe.fats }} g grasas</p>
+                  <ul>@for (reason of recipe.reasons; track reason) {<li>{{ reason }}</li>}</ul>
+                  @for (warning of recipe.warnings; track warning) {<p class="warning">{{ warning }}</p>}
+                  <details><summary>Ingredientes y preparación</summary><p>{{ recipe.ingredients }}</p><p>{{ recipe.instructions }}</p></details>
+                  @if (isLatest(turn.id)) {<button type="button" class="secondary" (click)="send('Asignale la ' + (i + 1))" [disabled]="busy()">Elegir opción {{ i + 1 }}</button>}
+                </div>
+              </article>
             }
           </div>
-        </article>
-      }
-    </div>
-    @if (response.recipes?.length) {
-      <div class="shortcuts"><button type="button" class="secondary" (click)="more()" [disabled]="busy()">Ver otras opciones</button><button type="button" class="secondary" (click)="reply.set(null); pending.set(null)" [disabled]="busy()">Descartar propuestas</button></div>
+          @if (turn.reply.kind === 'confirmation' && isLatest(turn.id)) {
+            <div class="confirmation"><button type="button" (click)="send('Confirmo')" [disabled]="busy()">Confirmar asignación</button><button type="button" class="secondary" (click)="send('No')" [disabled]="busy()">Descartar</button></div>
+          }
+        </div>
+      </article>
     }
-  }
+    @if (busy()) {<p class="status" role="status">Carlitos está preparando la respuesta…</p>}
+    <div #chatEnd></div>
+  </div>
+  @if (error()) {<p class="error" role="alert">{{ error() }}</p>}
   <form class="composer" (ngSubmit)="submit()">
-    <label for="carlitos-message">Tu pedido para Carlitos</label>
-    <textarea id="carlitos-message" name="message" [(ngModel)]="message" rows="2" maxlength="800" placeholder="Recomendale una cena a Alex" [disabled]="busy()" aria-describedby="carlitos-help"></textarea>
-    <div class="compose-footer"><small id="carlitos-help">Por ahora: búsqueda de pacientes y recetas. Las asignaciones requieren tu confirmación.</small><button [disabled]="busy() || !message.trim()">Consultar</button></div>
+    <label for="carlitos-message">Mensaje para Carlitos</label>
+    <textarea id="carlitos-message" name="message" [(ngModel)]="message" rows="2" maxlength="800" placeholder="Escribí lo que necesitás…" [disabled]="busy()" aria-describedby="carlitos-help"></textarea>
+    <div class="compose-footer"><small id="carlitos-help">Podés elegir y confirmar escribiendo en este mismo chat.</small><button [disabled]="busy() || !message.trim()">Enviar</button></div>
   </form>
 </section>
