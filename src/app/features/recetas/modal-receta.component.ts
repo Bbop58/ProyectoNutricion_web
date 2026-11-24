@@ -52,7 +52,7 @@ export class ModalRecetaComponent implements OnChanges {
     this.recipeForm = this.fb.group({
       title: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(250)]],
       description: [''],
-      image_url: ['https://images.unsplash.com/photo-1546069901-ba9599a7e63c'],
+      image_url: [''],
       calories: [null, [Validators.required, Validators.min(0)]],
       protein: [null, [Validators.required, Validators.min(0)]],
       carbohydrates: [null, [Validators.required, Validators.min(0)]],
@@ -78,7 +78,7 @@ export class ModalRecetaComponent implements OnChanges {
         this.recipeForm.patchValue({
           title: this.editingRecipe.title,
           description: this.editingRecipe.description || '',
-          image_url: this.editingRecipe.image_url || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c',
+          image_url: this.editingRecipe.image_url || '',
           calories: this.editingRecipe.calories,
           protein: this.editingRecipe.protein,
           carbohydrates: this.editingRecipe.carbohydrates,
@@ -98,7 +98,7 @@ export class ModalRecetaComponent implements OnChanges {
         this.recipeForm.patchValue({
           title: this.prefillData.title || '',
           description: this.prefillData.description || '',
-          image_url: this.prefillData.image_url || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c',
+          image_url: this.prefillData.image_url || '',
           calories: this.prefillData.calories ?? null,
           protein: this.prefillData.protein ?? null,
           carbohydrates: this.prefillData.carbohydrates ?? null,
@@ -123,7 +123,7 @@ export class ModalRecetaComponent implements OnChanges {
         this.recipeForm.reset({
           title: '',
           description: '',
-          image_url: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c',
+          image_url: '',
           calories: null,
           protein: null,
           carbohydrates: null,

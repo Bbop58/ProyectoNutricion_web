@@ -17,7 +17,7 @@ describe('Exclusive staff navigation', () => {
     id: 'admin',
     full_name: 'Ana Prueba',
     email: 'ana@example.test',
-    role_id: 'SUPERADMIN',
+    role_id: 'ADMIN_ORGANIZATION',
     tenant_id: 'clinic',
   });
   let profileSaved: Subject<unknown>;
@@ -46,7 +46,7 @@ describe('Exclusive staff navigation', () => {
     }
   }
   beforeEach(async () => {
-    user.update((u) => ({ ...u, role_id: 'SUPERADMIN' }));
+    user.update((u) => ({ ...u, role_id: 'ADMIN_ORGANIZATION' }));
     profileSaved = new Subject();
     await TestBed.configureTestingModule({
       imports: [DashboardComponent],
@@ -92,7 +92,7 @@ describe('Exclusive staff navigation', () => {
     expect(dashboard.textContent.trim()).toBe('Dashboard');
     expect(dashboard.hasAttribute('aria-expanded')).toBe(false);
     expect(dashboard.getAttribute('aria-current')).toBe('page');
-    const packages = staffPackagesForRole('SUPERADMIN');
+    const packages = staffPackagesForRole('ADMIN_ORGANIZATION');
     expect(
       packages.find((p) => p.id === 'administracion')?.items.some((i) => i.tab === 'suscripcion'),
     ).toBe(true);
@@ -144,7 +144,7 @@ describe('Exclusive staff navigation', () => {
   });
   it('shows profile as a single page and removes it on every other module', () => {
     const component = fixture.componentInstance;
-    const tabs = staffPackagesForRole('SUPERADMIN').flatMap((p) => p.items.map((i) => i.tab));
+    const tabs = staffPackagesForRole('ADMIN_ORGANIZATION').flatMap((p) => p.items.map((i) => i.tab));
     for (const tab of ['principal', ...tabs, 'notificaciones']) {
       component.setActiveTab('perfil', false);
       fixture.detectChanges();

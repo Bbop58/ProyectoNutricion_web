@@ -2517,14 +2517,7 @@
             @for (recipe of recipeService.recipes(); track recipe.id) {
               <div class="recipe-card">
                 <div class="recipe-image-container">
-                  <img
-                    [src]="
-                      recipe.image_url ||
-                      'https://images.unsplash.com/photo-1546069901-ba9599a7e63c'
-                    "
-                    [alt]="recipe.title"
-                    class="recipe-image"
-                  />
+                  <ns-recipe-image [src]="recipe.image_url" [title]="recipe.title" [category]="recipe.category" />
                   <span class="badge-category">{{ recipe.category }}</span>
                   <span class="badge-difficulty">{{ recipe.difficulty }}</span>
                 </div>

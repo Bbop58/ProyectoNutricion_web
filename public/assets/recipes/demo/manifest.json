@@ -1,0 +1,194 @@
+[
+  {
+    "key": "avena-fruta",
+    "file": "avena-fruta.webp",
+    "bytes": 52472,
+    "sha256": "4619bae84ed1204fe779a982d0dac0bafeaa8b1ea819e73eeb2a64bd226b9ec7"
+  },
+  {
+    "key": "huevo-verduras",
+    "file": "huevo-verduras.webp",
+    "bytes": 64386,
+    "sha256": "06a94ebe967ff2a9af9fc5c5f71df03f6f26c2e399f2694523085ee2f4b88f4e"
+  },
+  {
+    "key": "pollo-quinoa",
+    "file": "pollo-quinoa.webp",
+    "bytes": 59334,
+    "sha256": "4ce86ee27c1c64bac83b7c04588c756745afb0371d34c0d6aed8f08f1c86aad0"
+  },
+  {
+    "key": "lentejas-arroz",
+    "file": "lentejas-arroz.webp",
+    "bytes": 43298,
+    "sha256": "16b936eda75edfd51528b20c3edc08bb41d0d5b8f3e39daa1676c8fa3e080167"
+  },
+  {
+    "key": "quinua-ensalada",
+    "file": "quinua-ensalada.webp",
+    "bytes": 49328,
+    "sha256": "85a3eab4391d55ee0e98dd9bde45a76db5605a22437a3fe26856208f79f376ea"
+  },
+  {
+    "key": "sopa-verduras",
+    "file": "sopa-verduras.webp",
+    "bytes": 31210,
+    "sha256": "2ff5d80dff4bb90a577a911458956dea670cb4e48ad365e6dbefe9fad3260d8c"
+  },
+  {
+    "key": "yogur-fruta",
+    "file": "yogur-fruta.webp",
+    "bytes": 47952,
+    "sha256": "4467d053a2939f3da9d6051d73bd0e780065d428388853f1c507548afc025797"
+  },
+  {
+    "key": "fruta-semillas",
+    "file": "fruta-semillas.webp",
+    "bytes": 45030,
+    "sha256": "b4f6cdf55ca652d35c4f15ba0eaedc1a8d04e0885da23773524d343defc26ae3"
+  },
+  {
+    "key": "arroz-manzana",
+    "file": "arroz-manzana.webp",
+    "bytes": 43650,
+    "sha256": "0c31f211ed6f7618fec5ba32f31ab1bde2cab1d4cb1858f23ec92c1766a370ea"
+  },
+  {
+    "key": "pan-integral-queso",
+    "file": "pan-integral-queso.webp",
+    "bytes": 40616,
+    "sha256": "5d2ed4a0fe287da05af1ccee6b4f5189138e941efd96662e5f165fc196a07b26"
+  },
+  {
+    "key": "huevo-palta",
+    "file": "huevo-palta.webp",
+    "bytes": 38400,
+    "sha256": "078a91bbe021bb8b64d2bddef89017f1c8db5acbeec42443f2127bce12b2656a"
+  },
+  {
+    "key": "yogur-nueces",
+    "file": "yogur-nueces.webp",
+    "bytes": 36174,
+    "sha256": "25444415ef0518d9af698306994ff704711cb4907d1162b6854c5a3a02781e30"
+  },
+  {
+    "key": "batido-mani",
+    "file": "batido-mani.webp",
+    "bytes": 42838,
+    "sha256": "f92c20185685f44ecfe35c3ece19479a536338cca2b5bddf0fe5b68e02c1d89e"
+  },
+  {
+    "key": "quinua-pera",
+    "file": "quinua-pera.webp",
+    "bytes": 51906,
+    "sha256": "c48451999b616c648523cc3e8cf722c184c7bcc096e68abe7a72041965d0d991"
+  },
+  {
+    "key": "pollo-arroz",
+    "file": "pollo-arroz.webp",
+    "bytes": 55646,
+    "sha256": "fd6d0cc13dfe026ae06a6814642747f61e8a7346a72a0fa86eb5aec71c53febd"
+  },
+  {
+    "key": "pescado-papa",
+    "file": "pescado-papa.webp",
+    "bytes": 41014,
+    "sha256": "2b180dbc8dce29a1fdbd511d143c3bb7ec6b0c3645970bc4fbf72afa879dd17b"
+  },
+  {
+    "key": "garbanzos-zapallo",
+    "file": "garbanzos-zapallo.webp",
+    "bytes": 28712,
+    "sha256": "785d7b738b988175256d5ea66a934cb7c9cc218226b25fb80fef83b136124f31"
+  },
+  {
+    "key": "tofu-arroz",
+    "file": "tofu-arroz.webp",
+    "bytes": 36492,
+    "sha256": "8a0e4a68ed9923b5992d208f9a7ec07ccf86a3b65827d6a609cbe51d2e146984"
+  },
+  {
+    "key": "carne-quinoa",
+    "file": "carne-quinoa.webp",
+    "bytes": 41176,
+    "sha256": "41ccbad99cad2732c96dc7f3f97c00e1712d1738113a9e58df0c0caa66bb9f11"
+  },
+  {
+    "key": "pasta-atun",
+    "file": "pasta-atun.webp",
+    "bytes": 64240,
+    "sha256": "04f1a83826b3b4e34913a95f191966aa55c2c431cda65d42e680a43d3fb80af1"
+  },
+  {
+    "key": "lentejas-zanahoria",
+    "file": "lentejas-zanahoria.webp",
+    "bytes": 42162,
+    "sha256": "b510325c4a9b8b6e6f05d1304e56c9a28a0b8a4c438b8cb6d6b3dcd45c1fd0ef"
+  },
+  {
+    "key": "pollo-zapallo",
+    "file": "pollo-zapallo.webp",
+    "bytes": 48360,
+    "sha256": "8c535dc9a6a170928159c58f4101e6ec57fed439ad29edf85834f7985ca24a06"
+  },
+  {
+    "key": "ensalada-porotos",
+    "file": "ensalada-porotos.webp",
+    "bytes": 53688,
+    "sha256": "745a95f0e15e930e936487bc7d0bf41fe5c5a5ef2f442de30d721714e619acec"
+  },
+  {
+    "key": "sopa-fideos",
+    "file": "sopa-fideos.webp",
+    "bytes": 36824,
+    "sha256": "cf4a221b13ddcbb6528378e05ccbae55874ce484ae82b9ad5f88e6045fe798ce"
+  },
+  {
+    "key": "tortilla-queso",
+    "file": "tortilla-queso.webp",
+    "bytes": 82568,
+    "sha256": "c48b37ad20e470af9dbd7a5733bcba6cac82778e2816342dbce8b0e068c0605f"
+  },
+  {
+    "key": "hamburguesa-garbanzo",
+    "file": "hamburguesa-garbanzo.webp",
+    "bytes": 42798,
+    "sha256": "8f692be45b8962108e540aaa3b9e36e85e327946d97bf780d96cb54c68a3fcf0"
+  },
+  {
+    "key": "manzana-yogur",
+    "file": "manzana-yogur.webp",
+    "bytes": 31852,
+    "sha256": "33cc80a269cde5897046305c6dcc915df2ed07105f06a6eed6b25a6e71baebd8"
+  },
+  {
+    "key": "humus-zanahoria",
+    "file": "humus-zanahoria.webp",
+    "bytes": 46322,
+    "sha256": "a5b4ae1a70bb678a357ea3d55103d3699aa82bafcd0b16348f3e3e5703bf272a"
+  },
+  {
+    "key": "pera-semillas",
+    "file": "pera-semillas.webp",
+    "bytes": 28416,
+    "sha256": "49fe1dba44a693f52248c5786a02a8a461faf2c385ba0d6d36e088133e4bb50e"
+  },
+  {
+    "key": "camote-queso",
+    "file": "camote-queso.webp",
+    "bytes": 34160,
+    "sha256": "cfcec0ee9c9d66ecf6156e5ec1ede1433bb79b0e0d86adf895b909ec452994bc"
+  },
+  {
+    "key": "sandwich-pollo",
+    "file": "sandwich-pollo.webp",
+    "bytes": 51556,
+    "sha256": "ffb2804bf0248af92216ababb4abf670017bb6efba604e0f0ddf14714aef5e30"
+  },
+  {
+    "key": "ensalada-fruta",
+    "file": "ensalada-fruta.webp",
+    "bytes": 23620,
+    "sha256": "baea2485ed94d021a7c4ba2d8254753f5238dc5fa40109e2270f2c769b1536a2"
+  }
+]

@@ -1,6 +1,7 @@
 import { SubscriptionDocumentsComponent } from '../../shared/ui/subscription-documents.component';
 import { CareWorkspaceComponent } from '../care/care-workspace.component';
 import { EmailDocumentComponent } from '../../shared/ui/email-document.component';
+import { RecipeImageComponent } from '../../shared/ui/recipe-image.component';
 import { OfflinePanelComponent } from '../../shared/ui/offline-panel.component';
 import { OfflineService } from '../../core/services/offline.service';
 import { StaffNavigationComponent } from './staff-navigation.component';
@@ -101,6 +102,7 @@ import { ModalRestaurarBackupComponent } from '../copias-seguridad/modal-restaur
     SubscriptionDocumentsComponent,
     CareWorkspaceComponent,
     EmailDocumentComponent,
+    RecipeImageComponent,
     OfflinePanelComponent,
     UserAvatarComponent,
     AvatarPickerComponent,
