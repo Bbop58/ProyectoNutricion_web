@@ -22,7 +22,8 @@ export class CareWorkspaceComponent {
   start = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toLocaleDateString('en-CA');
   end = new Date().toLocaleDateString('en-CA');
   measurementDate = this.end; weight: number | null = null; height: number | null = null;
-  config: any = null; configReason = ''; csv = ''; fileName = ''; offset = 0; hasMore = false;
+  config: any = null; configReason = ''; csv = signal(''); fileName = signal(''); readingFile = signal(false); offset = 0; hasMore = false;
+  private fileReadVersion = 0;
   private loaded = false;
   isPatient() { return this.auth.currentUser()?.role_id === 'CLIENTE'; }
   canChat() { return ['CLIENTE','NUTRICIONISTA','ADMIN_ORGANIZATION'].includes(this.auth.currentUser()?.role_id || ''); }
@@ -99,17 +100,28 @@ export class CareWorkspaceComponent {
   }
   loadVersions() { this.http.get<any[]>(this.api + '/care/configuration/history').subscribe({next: value => this.versions.set(value),error: () => this.error.set('No se pudo cargar el historial de parámetros.')}); }
   async readFile(event: Event) {
-    const file = (event.target as HTMLInputElement).files?.[0]; this.preview.set(null);this.imported.set(null);this.csv = '';
+    const version = ++this.fileReadVersion;
+    const file = (event.target as HTMLInputElement).files?.[0]; this.preview.set(null);this.imported.set(null);this.csv.set('');this.fileName.set('');this.error.set('');this.readingFile.set(false);
     if (!file) return;
     if (file.size > 1_000_000 || !file.name.toLowerCase().endsWith('.csv')) {this.error.set('Selecciona un CSV de hasta 1 MB.');return;}
-    try {this.csv = await file.text();this.fileName = file.name;this.error.set('');} catch {this.error.set('No se pudo leer el archivo.');}
+    this.readingFile.set(true);
+    try {
+      const content = await file.text();
+      if (version !== this.fileReadVersion) return;
+      if (!content.trim()) {this.error.set('El archivo CSV está vacío. Selecciona uno con pacientes.');return;}
+      this.csv.set(content);this.fileName.set(file.name);
+    } catch {if (version === this.fileReadVersion) this.error.set('No se pudo leer el archivo. Vuelve a seleccionarlo.');}
+    finally {if (version === this.fileReadVersion) this.readingFile.set(false);}
   }
   template() {
     const url = URL.createObjectURL(new Blob(['full_name,email,password,phone\nPaciente Ejemplo,paciente@ejemplo.com,Cambiar123!,70000000\n'],{type:'text/csv;charset=utf-8'}));
     const a = document.createElement('a');a.href = url;a.download = 'Plantilla_pacientes.csv';a.click();setTimeout(() => URL.revokeObjectURL(url),1000);
   }
-  previewImport() { this.run(this.http.post<any>(this.api + '/care/patient-imports/preview',{csv_content:this.csv}), value => {this.preview.set(value);this.imported.set(null);}); }
+  previewImport() {
+    if (this.readingFile() || !this.csv().trim()) return;
+    this.run(this.http.post<any>(this.api + '/care/patient-imports/preview',{csv_content:this.csv()}), value => {this.preview.set(value);this.imported.set(null);});
+  }
   confirmImport() {
-    this.run(this.http.post<any>(`${this.api}/care/patient-imports/${this.preview().batch_id}/confirm`,{}), value => {this.imported.set(value);this.preview.set(null);this.csv = '';this.message.set('Importación finalizada.');});
+    this.run(this.http.post<any>(`${this.api}/care/patient-imports/${this.preview().batch_id}/confirm`,{}), value => {this.imported.set(value);this.preview.set(null);this.csv.set('');this.fileName.set('');this.message.set('Importación finalizada.');});
   }
 }

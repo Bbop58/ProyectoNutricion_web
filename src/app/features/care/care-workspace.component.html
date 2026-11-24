@@ -84,7 +84,7 @@
   @if (tab === 'import' && !isPatient()) {
     <p>CSV de hasta 1 MB y 100 pacientes. Columnas: full_name, email, password; phone es opcional. La contraseña requiere 8 caracteres, mayúscula, minúscula, número y símbolo. Se usa tu empresa y sucursal activa.</p>
     <button type="button" class="secondary" (click)="template()">Descargar plantilla CSV</button>
-    <label>Archivo de pacientes<input type="file" accept=".csv,text/csv" (change)="readFile($event)" [disabled]="busy()" /></label><button type="button" (click)="previewImport()" [disabled]="busy() || !csv">Analizar {{ fileName }}</button>
+    <label>Archivo de pacientes<input type="file" accept=".csv,text/csv" (change)="readFile($event)" [disabled]="busy() || readingFile()" /></label><button type="button" (click)="previewImport()" [disabled]="busy() || readingFile() || !csv()">{{ readingFile() ? 'Leyendo archivo…' : 'Analizar ' + fileName() }}</button>
     @if (preview(); as p) {
       <p>{{ p.total }} filas · {{ p.accepted }} aceptadas · {{ p.rejected }} rechazadas. Todavía no se crearon pacientes. Confirma durante los próximos 15 minutos.</p>
       <div class="care-table"><table><thead><tr><th>Fila</th><th>Nombre</th><th>Correo</th><th>Resultado</th></tr></thead><tbody>@for (row of p.rows; track row.row) { <tr><td>{{ row.row }}</td><td>{{ row.full_name }}</td><td>{{ row.email }}</td><td>{{ row.error || 'Aceptada' }}</td></tr> }</tbody></table></div>
